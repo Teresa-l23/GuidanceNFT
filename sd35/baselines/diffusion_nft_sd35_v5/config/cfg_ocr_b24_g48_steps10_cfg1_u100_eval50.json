@@ -1,0 +1,58 @@
+{
+  "schema_version": 2,
+  "task": "control-ocr",
+  "cfg_mode": "cfg1",
+  "cfg_unconditional_source": "same_model",
+  "world_size": 2,
+  "reward_fn": {
+    "ocr": 1.0
+  },
+  "sampling": {
+    "rollout_steps": 10,
+    "eval_steps": 40,
+    "resolution": 512,
+    "num_image_per_prompt": 24,
+    "num_groups": 48,
+    "max_train_batch_size": 24,
+    "test_batch_size": 16
+  },
+  "training": {
+    "gradient_steps_per_epoch": 1,
+    "max_train_steps": 100,
+    "seed": 42,
+    "beta": 0.1,
+    "kl_beta": 0.0001,
+    "decay_type": 1,
+    "save_freq": 50,
+    "latest_save_freq": 1,
+    "eval_freq": 50
+  },
+  "v5flow": {
+    "enabled": false,
+    "center": "old",
+    "init": "old_once",
+    "timestep_sampling": "rollout_schedule",
+    "num_inner_epochs": 1,
+    "learning_rate": 0.0003,
+    "max_grad_norm": 1.0,
+    "use_ema": true,
+    "ema_decay": 0.9,
+    "snapshot": "ema",
+    "theta_lifecycle": "persistent",
+    "theta_ema_decay": 0.9,
+    "loss_space": "reconstruction",
+    "normalize_branch_mae": true
+  },
+  "evaluation": {
+    "auto_submit": false,
+    "save_images": true,
+    "dataset": "ocr",
+    "reward_fn": {
+      "ocr": 1.0
+    },
+    "batch_size": 16,
+    "expected_samples": 1018,
+    "guidance_scales": [1.0, 4.0],
+    "inline_at_final": true
+  }
+}

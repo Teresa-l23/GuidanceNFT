@@ -1,0 +1,60 @@
+schema_version: 4
+task: owt
+base_config: src/configs/training_configs/train_owt_ELF-B.yml
+pretrained_checkpoint: embedded-language-flows/ELF-B-owt
+parameterization: full_shared
+method: standard
+output_dir: ${GUIDANCENFT_ASSETS}/runs/elf_nft/task_aware/owt_sde32_sc_cfg3_standard
+seed: 42
+
+sampling:
+  method: sde
+  num_steps: 32
+  time_schedule: logit_normal
+  sde_gamma: 1.5
+  cfg_scale: 1.0
+  self_cond_cfg_scale: 3.0
+
+rollout:
+  prompt_groups_per_outer: 1
+  samples_per_prompt: 8
+  max_outer_steps: 200
+
+reward:
+  type: causal_lm_loglik
+  model_name: gpt2-large
+  batch_size: 2
+  max_length: 1024
+  empty_text_reward: -20.0
+
+training:
+  batch_size: 2
+  num_inner_epochs: 1
+  learning_rate: 0.00003
+  weight_decay: 0.0
+  beta: 1.0
+  kl_beta: 0.1
+  decoder_ce_weight: 0.25
+  adv_clip_max: 5.0
+  max_grad_norm: 1.0
+  old_policy_decay_type: 1
+  self_cond_update_probability: 0.5
+  timestep_schedule: logit_normal
+  timesteps_per_batch: 1
+
+center:
+  learning_rate: 0.00003
+  num_inner_epochs: 1
+  ema_decay: 0.9
+  snapshot: ema
+
+checkpoint:
+  save_every: 10
+  keep: 3
+
+logging:
+  use_wandb: false
+  wandb_project: elf-nft
+  wandb_run_name: owt-sde32-sc-cfg3-standard
+
+formal_experiment: true

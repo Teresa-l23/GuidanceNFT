@@ -1,0 +1,178 @@
+{
+  "schema_version": 2,
+  "experiment": "sd35_step100_drawbench_paper_rewards",
+  "checkpoint_root": "${GUIDANCENFT_ASSETS}/runs/diffusion_nft_sd35_v5",
+  "checkpoint_step": 100,
+  "base_model": {
+    "repo_id": "stabilityai/stable-diffusion-3.5-medium",
+    "revision": "b940f670f0eda2d07fbb75229e779da1ad11eb80"
+  },
+  "evaluation": {
+    "dataset": "drawbench",
+    "generation_reward": "pickscore",
+    "rescore_rewards": ["clipscore", "hpsv2", "aesthetic", "imagereward"],
+    "reported_rewards": ["pickscore", "clipscore", "hpsv2", "aesthetic", "imagereward"],
+    "unavailable_rewards": {
+      "unifiedreward": "requires a separately staged UnifiedReward-7B sglang service at 127.0.0.1:17140"
+    },
+    "seed": 42,
+    "num_inference_steps": 40,
+    "guidance_scales": [1.0, 4.0],
+    "resolution": 512,
+    "mixed_precision": "fp16",
+    "world_size": 1,
+    "generation_batch_size_per_rank": 8,
+    "rescore_batch_size_per_rank": {
+      "clipscore": 16,
+      "hpsv2": 16,
+      "aesthetic": 16,
+      "imagereward": 8
+    },
+    "expected_samples": 1000,
+    "smoke_samples": 20,
+    "save_all_images": true
+  },
+  "families": [
+    {
+      "key": "geneval",
+      "label": "GenEval fine-tuning",
+      "training_dataset": "geneval",
+      "training_rewards": {"geneval": 1.0},
+      "methods": [
+        {
+          "key": "standard",
+          "label": "Classic CFG1 old-center",
+          "run_id": "control-geneval_steps10_u200_53806010",
+          "task": "control-geneval",
+          "config_sha256": "e3ee35fb56aaa92a9876563e5f725ac8124db2fc59a58a17f736938d7feb98fc",
+          "max_train_steps": 200,
+          "resume_epoch": 100,
+          "method": "old_center",
+          "cfg_mode": "cfg1",
+          "cfg_unconditional_source": null,
+          "checkpoint_kind": "outer_boundary"
+        },
+        {
+          "key": "dual",
+          "label": "Dual CFG1 old-center",
+          "run_id": "control-geneval-cfg1dual_steps10_u100_54168302",
+          "task": "control-geneval",
+          "config_sha256": "2ba8a53d60d0a4fc1d9bc63fe5c0d3641545bcc695917a470b3414db6e4b4df4",
+          "max_train_steps": 100,
+          "resume_epoch": 99,
+          "method": "old_center",
+          "cfg_mode": "cfg1_dual",
+          "cfg_unconditional_source": "same_model",
+          "checkpoint_kind": "final"
+        },
+        {
+          "key": "fm100",
+          "label": "CFG4 rollout FM+100",
+          "run_id": "geneval_steps10_u200_53654216",
+          "task": "geneval",
+          "config_sha256": "a1fc9c734cb0a7535cdf79a121f36c803cba1b9ea26700a069bf889e83ae13b5",
+          "max_train_steps": 200,
+          "resume_epoch": 100,
+          "method": "v5flow",
+          "cfg_mode": "cfg4_rollout",
+          "cfg_unconditional_source": null,
+          "checkpoint_kind": "outer_boundary"
+        }
+      ]
+    },
+    {
+      "key": "pickscore",
+      "label": "PickScore fine-tuning",
+      "training_dataset": "drawbench",
+      "training_rewards": {"pickscore": 1.0},
+      "methods": [
+        {
+          "key": "standard",
+          "label": "Classic CFG1 old-center",
+          "run_id": "control-pickscore_steps10_u100_54871951",
+          "task": "control-pickscore",
+          "config_sha256": "a679811c599f5834844d4842d78bc908b0130963061d122da28ee056cf6be870",
+          "max_train_steps": 100,
+          "resume_epoch": 99,
+          "method": "old_center",
+          "cfg_mode": "cfg1",
+          "cfg_unconditional_source": "same_model",
+          "checkpoint_kind": "final"
+        },
+        {
+          "key": "dual",
+          "label": "Dual CFG1 old-center",
+          "run_id": "control-pickscore-cfg1dual_steps10_u100_54871880",
+          "task": "control-pickscore",
+          "config_sha256": "489375e2fe3b37c4fbc0c68a61c22d1466fa2d6d1633900d6c39638603713fe6",
+          "max_train_steps": 100,
+          "resume_epoch": 99,
+          "method": "old_center",
+          "cfg_mode": "cfg1_dual",
+          "cfg_unconditional_source": "same_model",
+          "checkpoint_kind": "final"
+        },
+        {
+          "key": "fm100",
+          "label": "CFG4 rollout FM+100",
+          "run_id": "pickscore_steps10_u100_54872044",
+          "task": "pickscore",
+          "config_sha256": "93206f16cc7d76ab2c8306ba72b0939584f0648b1318325aed031c225ebd40f8",
+          "max_train_steps": 100,
+          "resume_epoch": 99,
+          "method": "v5flow",
+          "cfg_mode": "cfg4_rollout",
+          "cfg_unconditional_source": "same_model",
+          "checkpoint_kind": "final"
+        }
+      ]
+    },
+    {
+      "key": "learned3",
+      "label": "PickScore + CLIPScore + HPSv2.1 fine-tuning",
+      "training_dataset": "drawbench",
+      "training_rewards": {"pickscore": 1.0, "clipscore": 1.0, "hpsv2": 1.0},
+      "methods": [
+        {
+          "key": "standard",
+          "label": "Classic CFG1 old-center",
+          "run_id": "control-learned3_steps10_u100_54555957",
+          "task": "control-learned3",
+          "config_sha256": "0c095d9d9e85409e3f5e6990238bf351582cb0eeba6f547f77ca44ce2bdf9ed4",
+          "max_train_steps": 100,
+          "resume_epoch": 99,
+          "method": "old_center",
+          "cfg_mode": "cfg1",
+          "cfg_unconditional_source": "same_model",
+          "checkpoint_kind": "final"
+        },
+        {
+          "key": "dual",
+          "label": "Dual CFG1 old-center",
+          "run_id": "control-learned3-cfg1dual_steps10_u100_54555955",
+          "task": "control-learned3",
+          "config_sha256": "1f6ed69c31723f32ab1c892b14dac7a48c5c7f01034a290f09f929921447fa12",
+          "max_train_steps": 100,
+          "resume_epoch": 99,
+          "method": "old_center",
+          "cfg_mode": "cfg1_dual",
+          "cfg_unconditional_source": "same_model",
+          "checkpoint_kind": "final"
+        },
+        {
+          "key": "fm100",
+          "label": "CFG4 rollout FM+100",
+          "run_id": "learned3_steps10_u100_54555956",
+          "task": "learned3",
+          "config_sha256": "231b88f822801a60682e1a07fa15d9ee571a3ae6250575c7b5b9cc3795fa5e6c",
+          "max_train_steps": 100,
+          "resume_epoch": 99,
+          "method": "v5flow",
+          "cfg_mode": "cfg4_rollout",
+          "cfg_unconditional_source": "same_model",
+          "checkpoint_kind": "final"
+        }
+      ]
+    }
+  ]
+}

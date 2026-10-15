@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "method": "shiftcenter",
+  "run_name": "sit_xl_guidancenft_cfg1p5",
+  "output_root": "${GUIDANCENFT_ASSETS}/runs/sit_xl_cfg_nft",
+  "init_checkpoint": "${GUIDANCENFT_ASSETS}/checkpoints/sit/SiT-XL-2-256.pt",
+  "init_checkpoint_sha256": "e645b5cd82d1d645cfd9b7c96041b56b2a0aa61faed90c0869e79be02ab55aca",
+  "model_key": "SiT-XL/2",
+  "image_size": 256,
+  "num_classes": 1000,
+  "vae_name": "stabilityai/sd-vae-ft-ema",
+  "vae_revision": "f04b2c4b98319346dad8c65879f680b1997b204a",
+  "seed": 42,
+  "mixed_precision": "bf16",
+  "expected_gpus": 2,
+  "batch_reference_gpus": 2,
+  "max_outer_steps": 400,
+  "rollout": {
+    "sampler": "sde",
+    "sampling_steps": 10,
+    "cfg_scale": 1.5,
+    "groups_global": 48,
+    "samples_per_class": 24,
+    "batch_size": 24,
+    "preview_samples": 48
+  },
+  "reward": {
+    "name": "pickscore_imagenet",
+    "processor_name": "laion/CLIP-ViT-H-14-laion2B-s32B-b79K",
+    "processor_revision": "1c2b8495b28150b8a4922ee1c8edee224c284c0c",
+    "model_name": "yuvalkirstain/PickScore_v1",
+    "model_revision": "a4e4367c6dfa7288a00c550414478f865b875800",
+    "prompt_template": "an image of {class_name}",
+    "batch_size": 8,
+    "dtype": "fp32",
+    "divide_by_26": true,
+    "advantage_epsilon": 0.0001
+  },
+  "training": {
+    "batch_size": 24,
+    "timestep_fraction": 0.99,
+    "inner_epochs": 1,
+    "learning_rate": 3e-06,
+    "weight_decay": 0.0,
+    "beta": 1.0,
+    "kl_beta": 0.0001,
+    "advantage_clip": 5.0,
+    "max_grad_norm": 1.0,
+    "old_policy_decay_type": 1
+  },
+  "center": {
+    "batch_size": 24,
+    "timestep_fraction": 0.99,
+    "inner_epochs": 1,
+    "learning_rate": 3e-06,
+    "weight_decay": 0.0,
+    "ema_decay": 0.9,
+    "snapshot": "ema",
+    "pretrain_updates": 100,
+    "pretrain_timesteps_per_endpoint": 4
+  },
+  "checkpoint": {
+    "save_every": 50,
+    "keep": 7
+  },
+  "evaluation": {
+    "every": 50,
+    "at_start": false,
+    "at_end": true,
+    "num_classes": 1000,
+    "samples_per_class": 2,
+    "batch_size": 8,
+    "preview_samples": 8
+  }
+}

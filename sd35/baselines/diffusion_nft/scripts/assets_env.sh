@@ -1,0 +1,277 @@
+#!/usr/bin/env bash
+
+# Shared, revisioned assets for the pinned DiffusionNFT GenEval baseline.
+# This file is meant to be sourced. It performs no downloads or Python work.
+
+DIFFUSION_NFT_UPSTREAM_COMMIT="${DIFFUSION_NFT_UPSTREAM_COMMIT:-cbb14f84b8312b620390dfcbe2fab69c1383b104}"
+
+_diffusion_nft_scripts_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DIFFUSION_NFT_BASELINE_ROOT="${DIFFUSION_NFT_BASELINE_ROOT:-$(cd "$_diffusion_nft_scripts_dir/.." && pwd)}"
+DIFFUSION_NFT_PROJECT_ROOT="${DIFFUSION_NFT_PROJECT_ROOT:-$(cd "$DIFFUSION_NFT_BASELINE_ROOT/../.." && pwd)}"
+DIFFUSION_NFT_UPSTREAM_ROOT="${DIFFUSION_NFT_UPSTREAM_ROOT:-$DIFFUSION_NFT_BASELINE_ROOT/upstream}"
+
+DIFFUSION_NFT_ASSET_ROOT="${DIFFUSION_NFT_ASSET_ROOT:-${GUIDANCENFT_ASSETS}/diffusion_nft/$DIFFUSION_NFT_UPSTREAM_COMMIT}"
+DIFFUSION_NFT_RUN_ROOT="${DIFFUSION_NFT_RUN_ROOT:-${GUIDANCENFT_ASSETS}/runs/diffusion_nft}"
+DIFFUSION_NFT_CONDA_ENV="${DIFFUSION_NFT_CONDA_ENV:-sit-nft-diffusionnft}"
+DIFFUSION_NFT_CONDA_EXE="${DIFFUSION_NFT_CONDA_EXE:-${CONDA_EXE:-$(command -v conda 2>/dev/null || true)}}"
+
+SD35_MODEL_REPO="${SD35_MODEL_REPO:-stabilityai/stable-diffusion-3.5-medium}"
+SD35_MODEL_REVISION="${SD35_MODEL_REVISION:-b940f670f0eda2d07fbb75229e779da1ad11eb80}"
+SD35_MODEL_DIR="${SD35_MODEL_DIR:-$DIFFUSION_NFT_ASSET_ROOT/models/stable-diffusion-3.5-medium/${SD35_MODEL_REVISION:-REVISION_REQUIRED}}"
+
+GENEVAL_DETECTOR_FILENAME="mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco_20220504_001756-743b7d99.pth"
+GENEVAL_DETECTOR_URL="https://download.openmmlab.com/mmdetection/v2.0/mask2former/mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco/mask2former_swin-s-p4-w7-224_lsj_8x2_50e_coco_20220504_001756-743b7d99.pth"
+GENEVAL_DETECTOR_SHA256="743b7d99015f1224c6d57fd4b14d04b15cc8ec72ae7ee7831e7c71d8873b7a54"
+
+GENEVAL_OPENAI_CLIP_FILENAME="ViT-L-14.pt"
+GENEVAL_OPENAI_CLIP_URL="https://openaipublic.azureedge.net/clip/models/b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836/ViT-L-14.pt"
+GENEVAL_OPENAI_CLIP_SHA256="b8cca3fd41ae0c99ba7e8951adf17d267cdb84cd88be6f7c2e0eca1737a03836"
+
+DIFFUSION_NFT_MMCV_REVISION="${DIFFUSION_NFT_MMCV_REVISION:-4e85793e58fb220ed91be8c075396b16a385f349}"
+DIFFUSION_NFT_MMDET_REVISION="${DIFFUSION_NFT_MMDET_REVISION:-e9cae2d0787cd5c2fc6165a6061f92fa09e48fb1}"
+DIFFUSION_NFT_OPEN_CLIP_REVISION="${DIFFUSION_NFT_OPEN_CLIP_REVISION:-602d4af74f86df6f2ff81ba0f0a847b0b70ad2e5}"
+DIFFUSION_NFT_CLIP_BENCHMARK_REVISION="${DIFFUSION_NFT_CLIP_BENCHMARK_REVISION:-ee14a9a8a9bcde09d51f4a4b1dff5a75182a3596}"
+
+DIFFUSION_NFT_REWARD_CKPT_DIR="${DIFFUSION_NFT_REWARD_CKPT_DIR:-$DIFFUSION_NFT_ASSET_ROOT/reward_ckpts}"
+GENEVAL_DETECTOR_PATH="${GENEVAL_DETECTOR_PATH:-$DIFFUSION_NFT_REWARD_CKPT_DIR/$GENEVAL_DETECTOR_FILENAME}"
+OPENCLIP_CACHE_DIR="${OPENCLIP_CACHE_DIR:-$DIFFUSION_NFT_ASSET_ROOT/open_clip}"
+GENEVAL_OPENAI_CLIP_PATH="${GENEVAL_OPENAI_CLIP_PATH:-$DIFFUSION_NFT_REWARD_CKPT_DIR/$GENEVAL_OPENAI_CLIP_FILENAME}"
+DIFFUSION_NFT_GENEVAL_CLIP_CKPT="${DIFFUSION_NFT_GENEVAL_CLIP_CKPT:-$GENEVAL_OPENAI_CLIP_PATH}"
+DIFFUSION_NFT_SOURCE_ROOT="${DIFFUSION_NFT_SOURCE_ROOT:-$DIFFUSION_NFT_ASSET_ROOT/sources}"
+DIFFUSION_NFT_STAGE_MANIFEST="${DIFFUSION_NFT_STAGE_MANIFEST:-$DIFFUSION_NFT_ASSET_ROOT/STAGED_ASSETS.env}"
+
+DIFFUSION_NFT_OCR_MODEL_ROOT="${DIFFUSION_NFT_OCR_MODEL_ROOT:-$DIFFUSION_NFT_ASSET_ROOT/paddleocr-2.9.1/PP-OCRv4}"
+DIFFUSION_NFT_OCR_DET_MODEL_DIR="${DIFFUSION_NFT_OCR_DET_MODEL_DIR:-$DIFFUSION_NFT_OCR_MODEL_ROOT/det}"
+DIFFUSION_NFT_OCR_REC_MODEL_DIR="${DIFFUSION_NFT_OCR_REC_MODEL_DIR:-$DIFFUSION_NFT_OCR_MODEL_ROOT/rec-en}"
+DIFFUSION_NFT_OCR_CLS_MODEL_DIR="${DIFFUSION_NFT_OCR_CLS_MODEL_DIR:-$DIFFUSION_NFT_OCR_MODEL_ROOT/cls}"
+DIFFUSION_NFT_OCR_MODEL_MANIFEST="${DIFFUSION_NFT_OCR_MODEL_MANIFEST:-$DIFFUSION_NFT_OCR_MODEL_ROOT/MANIFEST.sha256}"
+
+DIFFUSION_NFT_SHARED_HF_ROOT="${DIFFUSION_NFT_SHARED_HF_ROOT:-${GUIDANCENFT_ASSETS}/hf}"
+DIFFUSION_NFT_PICKSCORE_PROCESSOR_REVISION="${DIFFUSION_NFT_PICKSCORE_PROCESSOR_REVISION:-1c2b8495b28150b8a4922ee1c8edee224c284c0c}"
+DIFFUSION_NFT_PICKSCORE_MODEL_REVISION="${DIFFUSION_NFT_PICKSCORE_MODEL_REVISION:-a4e4367c6dfa7288a00c550414478f865b875800}"
+DIFFUSION_NFT_PICKSCORE_PROCESSOR_DIR="${DIFFUSION_NFT_PICKSCORE_PROCESSOR_DIR:-$DIFFUSION_NFT_SHARED_HF_ROOT/hub/models--laion--CLIP-ViT-H-14-laion2B-s32B-b79K/snapshots/$DIFFUSION_NFT_PICKSCORE_PROCESSOR_REVISION}"
+DIFFUSION_NFT_PICKSCORE_MODEL_DIR="${DIFFUSION_NFT_PICKSCORE_MODEL_DIR:-$DIFFUSION_NFT_SHARED_HF_ROOT/hub/models--yuvalkirstain--PickScore_v1/snapshots/$DIFFUSION_NFT_PICKSCORE_MODEL_REVISION}"
+DIFFUSION_NFT_CLIPSCORE_CACHE_ROOT="${DIFFUSION_NFT_CLIPSCORE_CACHE_ROOT:-$DIFFUSION_NFT_SHARED_HF_ROOT/hub/models--openai--clip-vit-large-patch14}"
+DIFFUSION_NFT_CLIPSCORE_REVISION="${DIFFUSION_NFT_CLIPSCORE_REVISION:-32bd64288804d66eefd0ccbe215aa642df71cc41}"
+DIFFUSION_NFT_CLIPSCORE_MODEL_SHA256="${DIFFUSION_NFT_CLIPSCORE_MODEL_SHA256:-a2bf730a0c7debf160f7a6b50b3aaf3703e7e88ac73de7a314903141db026dcb}"
+DIFFUSION_NFT_CLIPSCORE_MODEL_DIR="${DIFFUSION_NFT_CLIPSCORE_MODEL_DIR:-$DIFFUSION_NFT_CLIPSCORE_CACHE_ROOT/snapshots/$DIFFUSION_NFT_CLIPSCORE_REVISION}"
+
+DIFFUSION_NFT_HPS_BACKBONE_REVISION="${DIFFUSION_NFT_HPS_BACKBONE_REVISION:-1c2b8495b28150b8a4922ee1c8edee224c284c0c}"
+DIFFUSION_NFT_HPS_BACKBONE_SHA256="${DIFFUSION_NFT_HPS_BACKBONE_SHA256:-9a78ef8e8c73fd0df621682e7a8e8eb36c6916cb3c16b291a082ecd52ab79cc4}"
+DIFFUSION_NFT_HPSV21_REVISION="${DIFFUSION_NFT_HPSV21_REVISION:-697403c78157020a1ae59d23f111aa58ced35b0a}"
+DIFFUSION_NFT_HPSV21_SHA256="${DIFFUSION_NFT_HPSV21_SHA256:-c57a38fb4a2f7e7c15bf00da2ea377cdf165448b4dd1052a484c215a998c9837}"
+DIFFUSION_NFT_HPS_BACKBONE_PATH="${DIFFUSION_NFT_HPS_BACKBONE_PATH:-$DIFFUSION_NFT_REWARD_CKPT_DIR/open_clip_pytorch_model.bin}"
+DIFFUSION_NFT_HPSV21_PATH="${DIFFUSION_NFT_HPSV21_PATH:-$DIFFUSION_NFT_REWARD_CKPT_DIR/HPS_v2.1_compressed.pt}"
+
+DIFFUSION_NFT_AESTHETIC_REVISION="${DIFFUSION_NFT_AESTHETIC_REVISION:-fe88a163f4661b4ddabba0751ff645e2e620746e}"
+DIFFUSION_NFT_AESTHETIC_PATH="${DIFFUSION_NFT_AESTHETIC_PATH:-$DIFFUSION_NFT_REWARD_CKPT_DIR/sac+logos+ava1-l14-linearMSE.pth}"
+DIFFUSION_NFT_IMAGEREWARD_REVISION="${DIFFUSION_NFT_IMAGEREWARD_REVISION:-5736be03b2652728fb87788c9797b0570450ab72}"
+DIFFUSION_NFT_IMAGEREWARD_SHA256="${DIFFUSION_NFT_IMAGEREWARD_SHA256:-d71dc8d4912bc633c06ab8ef1ef6a81e8199d4369f14b47b29baf1d19de561f6}"
+DIFFUSION_NFT_IMAGEREWARD_PATH="${DIFFUSION_NFT_IMAGEREWARD_PATH:-$DIFFUSION_NFT_REWARD_CKPT_DIR/ImageReward.pt}"
+DIFFUSION_NFT_IMAGEREWARD_CONFIG_PATH="${DIFFUSION_NFT_IMAGEREWARD_CONFIG_PATH:-$DIFFUSION_NFT_REWARD_CKPT_DIR/med_config.json}"
+DIFFUSION_NFT_BERT_TOKENIZER_REVISION="${DIFFUSION_NFT_BERT_TOKENIZER_REVISION:-86b5e0934494bd15c9632b12f734a8a67f723594}"
+
+DIFFUSION_NFT_OPTIONAL_REWARD_CONDA_ENV="${DIFFUSION_NFT_OPTIONAL_REWARD_CONDA_ENV:-sit-nft-diffusionnft-rewards}"
+DIFFUSION_NFT_OPTIONAL_REWARD_ENV_MARKER="${DIFFUSION_NFT_OPTIONAL_REWARD_ENV_MARKER:-$DIFFUSION_NFT_ASSET_ROOT/environment/optional-rewards.ready.env}"
+
+HF_HOME="${HF_HOME:-$DIFFUSION_NFT_ASSET_ROOT/huggingface}"
+HF_HUB_CACHE="${HF_HUB_CACHE:-$HF_HOME/hub}"
+TORCH_HOME="${TORCH_HOME:-$DIFFUSION_NFT_ASSET_ROOT/torch}"
+XDG_CACHE_HOME="${XDG_CACHE_HOME:-$DIFFUSION_NFT_ASSET_ROOT/xdg_cache}"
+DIFFUSION_NFT_BERT_TOKENIZER_CACHE_ROOT="${DIFFUSION_NFT_BERT_TOKENIZER_CACHE_ROOT:-$HF_HUB_CACHE/models--bert-base-uncased}"
+DIFFUSION_NFT_BERT_TOKENIZER_DIR="${DIFFUSION_NFT_BERT_TOKENIZER_DIR:-$DIFFUSION_NFT_BERT_TOKENIZER_CACHE_ROOT/snapshots/$DIFFUSION_NFT_BERT_TOKENIZER_REVISION}"
+
+export DIFFUSION_NFT_UPSTREAM_COMMIT DIFFUSION_NFT_BASELINE_ROOT
+export DIFFUSION_NFT_PROJECT_ROOT DIFFUSION_NFT_UPSTREAM_ROOT
+export DIFFUSION_NFT_ASSET_ROOT DIFFUSION_NFT_RUN_ROOT
+export DIFFUSION_NFT_CONDA_ENV DIFFUSION_NFT_CONDA_EXE
+export SD35_MODEL_REPO SD35_MODEL_REVISION SD35_MODEL_DIR
+export GENEVAL_DETECTOR_FILENAME GENEVAL_DETECTOR_URL GENEVAL_DETECTOR_SHA256
+export GENEVAL_OPENAI_CLIP_FILENAME GENEVAL_OPENAI_CLIP_URL GENEVAL_OPENAI_CLIP_SHA256
+export DIFFUSION_NFT_MMCV_REVISION DIFFUSION_NFT_MMDET_REVISION
+export DIFFUSION_NFT_OPEN_CLIP_REVISION DIFFUSION_NFT_CLIP_BENCHMARK_REVISION
+export DIFFUSION_NFT_REWARD_CKPT_DIR GENEVAL_DETECTOR_PATH
+export OPENCLIP_CACHE_DIR GENEVAL_OPENAI_CLIP_PATH DIFFUSION_NFT_GENEVAL_CLIP_CKPT
+export DIFFUSION_NFT_SOURCE_ROOT DIFFUSION_NFT_STAGE_MANIFEST
+export DIFFUSION_NFT_OCR_MODEL_ROOT DIFFUSION_NFT_OCR_DET_MODEL_DIR
+export DIFFUSION_NFT_OCR_REC_MODEL_DIR DIFFUSION_NFT_OCR_CLS_MODEL_DIR
+export DIFFUSION_NFT_OCR_MODEL_MANIFEST
+export DIFFUSION_NFT_SHARED_HF_ROOT
+export DIFFUSION_NFT_PICKSCORE_PROCESSOR_REVISION DIFFUSION_NFT_PICKSCORE_MODEL_REVISION
+export DIFFUSION_NFT_PICKSCORE_PROCESSOR_DIR DIFFUSION_NFT_PICKSCORE_MODEL_DIR
+export DIFFUSION_NFT_CLIPSCORE_CACHE_ROOT DIFFUSION_NFT_CLIPSCORE_REVISION
+export DIFFUSION_NFT_CLIPSCORE_MODEL_SHA256 DIFFUSION_NFT_CLIPSCORE_MODEL_DIR
+export DIFFUSION_NFT_HPS_BACKBONE_REVISION DIFFUSION_NFT_HPS_BACKBONE_SHA256
+export DIFFUSION_NFT_HPSV21_REVISION DIFFUSION_NFT_HPSV21_SHA256
+export DIFFUSION_NFT_HPS_BACKBONE_PATH DIFFUSION_NFT_HPSV21_PATH
+export DIFFUSION_NFT_AESTHETIC_REVISION DIFFUSION_NFT_AESTHETIC_PATH
+export DIFFUSION_NFT_IMAGEREWARD_REVISION DIFFUSION_NFT_IMAGEREWARD_SHA256
+export DIFFUSION_NFT_IMAGEREWARD_PATH DIFFUSION_NFT_IMAGEREWARD_CONFIG_PATH
+export DIFFUSION_NFT_BERT_TOKENIZER_REVISION DIFFUSION_NFT_BERT_TOKENIZER_CACHE_ROOT
+export DIFFUSION_NFT_BERT_TOKENIZER_DIR
+export DIFFUSION_NFT_OPTIONAL_REWARD_CONDA_ENV DIFFUSION_NFT_OPTIONAL_REWARD_ENV_MARKER
+export HF_HOME HF_HUB_CACHE TORCH_HOME XDG_CACHE_HOME
+
+diffusion_nft_require_compute_allocation() {
+  if [[ -z "${SLURM_JOB_ID:-}" || -z "${SLURM_JOB_NODELIST:-}" ]]; then
+    echo "This action must run inside a Slurm compute allocation." >&2
+    echo "Do not run environment setup, asset staging, Python, or GPU checks on a login node." >&2
+    return 1
+  fi
+}
+
+diffusion_nft_require_sd35_revision() {
+  if ! [[ "$SD35_MODEL_REVISION" =~ ^[0-9a-f]{40}$ ]]; then
+    echo "SD35_MODEL_REVISION must be an explicitly verified 40-character Hugging Face commit SHA." >&2
+    echo "Moving labels such as 'main' are intentionally rejected." >&2
+    return 1
+  fi
+  SD35_MODEL_DIR="${SD35_MODEL_DIR/REVISION_REQUIRED/$SD35_MODEL_REVISION}"
+  export SD35_MODEL_DIR
+}
+
+diffusion_nft_enable_offline_mode() {
+  export HF_HUB_OFFLINE=1
+  export TRANSFORMERS_OFFLINE=1
+  export HF_DATASETS_OFFLINE=1
+  export DIFFUSERS_OFFLINE=1
+  export HF_HUB_DISABLE_TELEMETRY=1
+  export WANDB_MODE="${WANDB_MODE:-offline}"
+}
+
+diffusion_nft_require_geneval_assets() {
+  [[ -s "$GENEVAL_DETECTOR_PATH" ]] || {
+    echo "Missing GenEval detector: $GENEVAL_DETECTOR_PATH" >&2
+    return 1
+  }
+  [[ -s "$DIFFUSION_NFT_GENEVAL_CLIP_CKPT" ]] || {
+    echo "Missing GenEval CLIP checkpoint: $DIFFUSION_NFT_GENEVAL_CLIP_CKPT" >&2
+    return 1
+  }
+  [[ "$(sha256sum "$GENEVAL_DETECTOR_PATH" | awk '{print $1}')" == "$GENEVAL_DETECTOR_SHA256" ]] || {
+    echo "GenEval detector checksum mismatch: $GENEVAL_DETECTOR_PATH" >&2
+    return 1
+  }
+  [[ "$(sha256sum "$DIFFUSION_NFT_GENEVAL_CLIP_CKPT" | awk '{print $1}')" == "$GENEVAL_OPENAI_CLIP_SHA256" ]] || {
+    echo "GenEval CLIP checksum mismatch: $DIFFUSION_NFT_GENEVAL_CLIP_CKPT" >&2
+    return 1
+  }
+}
+
+diffusion_nft_require_pickscore_assets() {
+  local required_path
+  for required_path in \
+    "$DIFFUSION_NFT_PICKSCORE_PROCESSOR_DIR/config.json" \
+    "$DIFFUSION_NFT_PICKSCORE_PROCESSOR_DIR/preprocessor_config.json" \
+    "$DIFFUSION_NFT_PICKSCORE_PROCESSOR_DIR/tokenizer.json" \
+    "$DIFFUSION_NFT_PICKSCORE_MODEL_DIR/config.json" \
+    "$DIFFUSION_NFT_PICKSCORE_MODEL_DIR/model.safetensors"; do
+    [[ -s "$required_path" ]] || {
+      echo "Missing pinned PickScore asset: $required_path" >&2
+      return 1
+    }
+  done
+}
+
+diffusion_nft_require_clipscore_assets() {
+  local revision_file revision snapshot
+  if [[ -n "${DIFFUSION_NFT_CLIPSCORE_MODEL_DIR:-}" ]]; then
+    snapshot="$DIFFUSION_NFT_CLIPSCORE_MODEL_DIR"
+  else
+    revision_file="$DIFFUSION_NFT_CLIPSCORE_CACHE_ROOT/refs/main"
+    [[ -s "$revision_file" ]] || {
+      echo "Missing offline CLIPScore cache revision: $revision_file" >&2
+      return 1
+    }
+    revision="$(tr -d '[:space:]' < "$revision_file")"
+    [[ "$revision" =~ ^[0-9a-f]{40}$ ]] || {
+      echo "Invalid CLIPScore cache revision: $revision" >&2
+      return 1
+    }
+    snapshot="$DIFFUSION_NFT_CLIPSCORE_CACHE_ROOT/snapshots/$revision"
+  fi
+  [[ -s "$snapshot/config.json" && -s "$snapshot/preprocessor_config.json" ]] || {
+    echo "Incomplete CLIPScore snapshot: $snapshot" >&2
+    return 1
+  }
+  [[ -s "$snapshot/model.safetensors" || -s "$snapshot/pytorch_model.bin" ]] || {
+    echo "Missing CLIPScore model weights in: $snapshot" >&2
+    return 1
+  }
+  DIFFUSION_NFT_CLIPSCORE_MODEL_DIR="$snapshot"
+  export DIFFUSION_NFT_CLIPSCORE_MODEL_DIR
+}
+
+diffusion_nft_require_hpsv2_assets() {
+  local required_asset required_path expected_sha actual_sha
+  local required_assets=(
+    "$DIFFUSION_NFT_HPS_BACKBONE_PATH|$DIFFUSION_NFT_HPS_BACKBONE_SHA256"
+    "$DIFFUSION_NFT_HPSV21_PATH|$DIFFUSION_NFT_HPSV21_SHA256"
+  )
+  for required_asset in "${required_assets[@]}"; do
+    IFS='|' read -r required_path expected_sha <<< "$required_asset"
+    [[ -s "$required_path" ]] || {
+      echo "Missing HPSv2 asset: $required_path" >&2
+      return 1
+    }
+    actual_sha="$(sha256sum "$required_path" | awk '{print $1}')"
+    [[ "$actual_sha" == "$expected_sha" ]] || {
+      echo "HPSv2 checksum mismatch: expected=$expected_sha actual=$actual_sha path=$required_path" >&2
+      return 1
+    }
+  done
+}
+
+diffusion_nft_require_aesthetic_assets() {
+  diffusion_nft_require_clipscore_assets || return 1
+  [[ -s "$DIFFUSION_NFT_AESTHETIC_PATH" ]] || {
+    echo "Missing Aesthetic MLP checkpoint: $DIFFUSION_NFT_AESTHETIC_PATH" >&2
+    return 1
+  }
+  local cached_clip_snapshot
+  cached_clip_snapshot="$HF_HUB_CACHE/models--openai--clip-vit-large-patch14/snapshots/$DIFFUSION_NFT_CLIPSCORE_REVISION"
+  [[ -s "$cached_clip_snapshot/config.json" && -s "$cached_clip_snapshot/model.safetensors" ]] || {
+    echo "Aesthetic scorer cannot resolve its hard-coded offline CLIP cache: $cached_clip_snapshot" >&2
+    return 1
+  }
+}
+
+diffusion_nft_require_imagereward_assets() {
+  local actual_sha required_tokenizer_file
+  [[ -s "$DIFFUSION_NFT_IMAGEREWARD_PATH" ]] || {
+    echo "Missing ImageReward checkpoint: $DIFFUSION_NFT_IMAGEREWARD_PATH" >&2
+    return 1
+  }
+  actual_sha="$(sha256sum "$DIFFUSION_NFT_IMAGEREWARD_PATH" | awk '{print $1}')"
+  [[ "$actual_sha" == "$DIFFUSION_NFT_IMAGEREWARD_SHA256" ]] || {
+    echo "ImageReward checksum mismatch: expected=$DIFFUSION_NFT_IMAGEREWARD_SHA256 actual=$actual_sha" >&2
+    return 1
+  }
+  [[ -s "$DIFFUSION_NFT_IMAGEREWARD_CONFIG_PATH" ]] || {
+    echo "Missing ImageReward med_config.json: $DIFFUSION_NFT_IMAGEREWARD_CONFIG_PATH" >&2
+    return 1
+  }
+  [[ "$DIFFUSION_NFT_BERT_TOKENIZER_DIR" == /* ]] || {
+    echo "Offline bert-base-uncased tokenizer path must be absolute: $DIFFUSION_NFT_BERT_TOKENIZER_DIR" >&2
+    return 1
+  }
+  for required_tokenizer_file in \
+    config.json tokenizer_config.json tokenizer.json vocab.txt; do
+    [[ -s "$DIFFUSION_NFT_BERT_TOKENIZER_DIR/$required_tokenizer_file" ]] || {
+      echo "Missing pinned offline bert-base-uncased tokenizer file: $DIFFUSION_NFT_BERT_TOKENIZER_DIR/$required_tokenizer_file" >&2
+      return 1
+    }
+  done
+}
+
+diffusion_nft_select_optional_reward_environment() {
+  [[ -s "$DIFFUSION_NFT_OPTIONAL_REWARD_ENV_MARKER" ]] || {
+    echo "Optional reward environment is not ready: $DIFFUSION_NFT_OPTIONAL_REWARD_ENV_MARKER" >&2
+    echo "Run stage_optional_reward_assets.sh --prepare in a Slurm compute job first." >&2
+    return 1
+  }
+  DIFFUSION_NFT_CONDA_ENV="$DIFFUSION_NFT_OPTIONAL_REWARD_CONDA_ENV"
+  export DIFFUSION_NFT_CONDA_ENV
+}
+
+unset _diffusion_nft_scripts_dir

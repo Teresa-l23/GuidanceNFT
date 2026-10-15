@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "experiment": "sd35_four_family_three_seed_seven_reward_eval",
+  "checkpoint_root": "${GUIDANCENFT_ASSETS}/runs/diffusion_nft_sd35_v5",
+  "base_model": {
+    "repo_id": "stabilityai/stable-diffusion-3.5-medium",
+    "revision": "b940f670f0eda2d07fbb75229e779da1ad11eb80",
+    "model_index_sha256": "b5e97ca0d3c0cd9a1e3ed91a71bbdd489de7941b23fe038b3aaa9acf36fd1543"
+  },
+  "evaluation": {
+    "seeds": [42, 123, 2026],
+    "num_inference_steps": 40,
+    "resolution": 512,
+    "mixed_precision": "fp16",
+    "world_size": 2,
+    "save_drawbench_images": true,
+    "save_native_images": false,
+    "datasets": {
+      "drawbench": {
+        "dataset_file": "baselines/diffusion_nft/upstream/dataset/drawbench/test.txt",
+        "dataset_sha256": "9006b98feabb94b28a2bc0c88de42fd4f31a9ec3c2a19e308a02c5385b7172f0",
+        "expected_samples": 1000,
+        "batch_size_per_rank": 8,
+        "rewards": ["pickscore", "clipscore", "hpsv2", "aesthetic", "imagereward"],
+        "rescore_batch_size_per_rank": {
+          "clipscore": 16,
+          "hpsv2": 16,
+          "aesthetic": 16,
+          "imagereward": 8
+        }
+      },
+      "geneval": {
+        "dataset_file": "baselines/diffusion_nft/upstream/dataset/geneval/test_metadata.jsonl",
+        "dataset_sha256": "cec4b24b9fee7bac21c8f787054ecc8dc9ff831674037713a4cd35e0f0a74a28",
+        "expected_samples": 2212,
+        "batch_size_per_rank": 14,
+        "rewards": ["geneval"]
+      },
+      "ocr": {
+        "dataset_file": "baselines/diffusion_nft/upstream/dataset/ocr/test.txt",
+        "dataset_sha256": "4dd8caf3ab6ade73bd376c7d14c6ca49b6eacfb1bd321e22c40714ae4a98d4dc",
+        "expected_samples": 1018,
+        "batch_size_per_rank": 16,
+        "rewards": ["ocr"]
+      }
+    },
+    "policy_plan": [
+      {
+        "key": "standard",
+        "source": "standard",
+        "guidance_scales": [1.0, 4.0],
+        "cfg_unconditional_source": "same_model"
+      },
+      {
+        "key": "dual",
+        "source": "dual",
+        "guidance_scales": [4.0],
+        "cfg_unconditional_source": "same_model"
+      },
+      {
+        "key": "pretrained_unconditional",
+        "source": "standard",
+        "guidance_scales": [4.0],
+        "cfg_unconditional_source": "pretrained_base"
+      },
+      {
+        "key": "matched",
+        "source": "matched",
+        "guidance_scales": [1.0, 4.0],
+        "cfg_unconditional_source": "same_model"
+      }
+    ]
+  },
+  "families": [
+    {
+      "key": "learned3",
+      "training_step": 200,
+      "sources": {
+        "standard": {
+          "run_id": "control-learned3_steps10_u200_55474611",
+          "checkpoint_step": 200,
+          "checkpoint_storage": "checkpoints",
+          "task": "control-learned3",
+          "training_method": "old_center",
+          "cfg_mode": "cfg1",
+          "config_sha256": "b185147c3851984528c6b3473cf1f5bc3f8ae54969664d1daa1319f1b489c2c9",
+          "adapter_model_sha256": "6bed6e4f2193e371b30756ffdbfb8b0e18ae9bf31788fa9976c4370d75af0174"
+        },
+        "dual": {
+          "run_id": "control-learned3-cfg1dual_steps10_u200_55474616",
+          "checkpoint_step": 200,
+          "checkpoint_storage": "checkpoints",
+          "task": "control-learned3",
+          "training_method": "old_center",
+          "cfg_mode": "cfg1_dual",
+          "config_sha256": "8581d5242f24fee469f42ccf976ced70c82e52d9395c20ed6df4d24733e47659",
+          "adapter_model_sha256": "be2fab0690cb43840ab2544063f83471888fc434b2a85f4a2f18312913684d57"
+        },
+        "matched": {
+          "run_id": "learned3_steps10_u200_55474629",
+          "checkpoint_step": 200,
+          "checkpoint_storage": "checkpoints",
+          "task": "learned3",
+          "training_method": "v5flow",
+          "cfg_mode": "cfg4_rollout",
+          "config_sha256": "f430d9e1f9fd7851b56d77843986da4b0a427cdcf36606e2c2ab04e27d11dcca",
+          "adapter_model_sha256": "f61a3db05fcc8bbc98212ec2233fc9249967269295375fed8a8ff61e6889435b"
+        }
+      }
+    },
+    {
+      "key": "geneval",
+      "training_step": 200,
+      "sources": {
+        "standard": {
+          "run_id": "control-geneval_steps10_u200_53806010",
+          "checkpoint_step": 200,
+          "checkpoint_storage": "checkpoints",
+          "task": "control-geneval",
+          "training_method": "old_center",
+          "cfg_mode": "cfg1",
+          "config_sha256": "e3ee35fb56aaa92a9876563e5f725ac8124db2fc59a58a17f736938d7feb98fc",
+          "adapter_model_sha256": "e66aa3f7dd416e9f8c80a28487dd0d63f222ea448a5aa225ec23508d9cece1eb"
+        },
+        "dual": {
+          "run_id": "control-geneval-cfg1dual_steps10_u200_54427836",
+          "checkpoint_step": 200,
+          "checkpoint_storage": "checkpoints",
+          "task": "control-geneval",
+          "training_method": "old_center",
+          "cfg_mode": "cfg1_dual",
+          "config_sha256": "ae3e4e76173e4b2a177915b4c99589ed7b7c587ff952d94a455a314c0d42915e",
+          "adapter_model_sha256": "54e6e98a2a52c60e39abf3529f7e04cdd6b203910bef31b73f731dd57e21a056"
+        },
+        "matched": {
+          "run_id": "geneval_steps10_u200_53654216",
+          "checkpoint_step": 200,
+          "checkpoint_storage": "checkpoints",
+          "task": "geneval",
+          "training_method": "v5flow",
+          "cfg_mode": "cfg4_rollout",
+          "config_sha256": "a1fc9c734cb0a7535cdf79a121f36c803cba1b9ea26700a069bf889e83ae13b5",
+          "adapter_model_sha256": "5c85580c5fea302ccf2028d0250a32fc9903a92a77e464aedd0dbba83ab4b4da"
+        }
+      }
+    },
+    {
+      "key": "ocr",
+      "training_step": 50,
+      "sources": {
+        "standard": {
+          "run_id": "control-ocr_steps10_u100_54997942",
+          "checkpoint_step": 50,
+          "checkpoint_storage": "checkpoints",
+          "task": "control-ocr",
+          "training_method": "old_center",
+          "cfg_mode": "cfg1",
+          "config_sha256": "3caff7e384313b6556221b9f6d6f54654e69c809f8d884aff567079f6b02472b",
+          "adapter_model_sha256": "589b15acf2c29725a8c7a22fa9f7ad085c55730a3a706670efdd642841a9c95d"
+        },
+        "dual": {
+          "run_id": "control-ocr-cfg1dual_steps10_u100_54997899",
+          "checkpoint_step": 50,
+          "checkpoint_storage": "checkpoints",
+          "task": "control-ocr",
+          "training_method": "old_center",
+          "cfg_mode": "cfg1_dual",
+          "config_sha256": "2ac5734eb223bfab3d7eefaf2ac7c90789f7d9b9446ec94db064c5d1b8bd9f95",
+          "adapter_model_sha256": "ff02c19ab0ea6921f8b0aef352708f889f3eda2ca874e9aed2f179786d721ee8"
+        },
+        "matched": {
+          "run_id": "ocr_steps10_u100_54997985",
+          "checkpoint_step": 50,
+          "checkpoint_storage": "checkpoints",
+          "task": "ocr",
+          "training_method": "v5flow",
+          "cfg_mode": "cfg4_rollout",
+          "config_sha256": "778072391fcb3c8276f3deac58cc01abdd713462738d310f1874f8576a79dd98",
+          "adapter_model_sha256": "c0c1e15387c1e7dfcb9a080ffb56e83e0857f64e711b133e3c050ca0898ba84d"
+        }
+      }
+    },
+    {
+      "key": "pickscore",
+      "training_step": 100,
+      "sources": {
+        "standard": {
+          "run_id": "control-pickscore_steps10_u100_54871951",
+          "checkpoint_step": 100,
+          "checkpoint_storage": "checkpoints",
+          "task": "control-pickscore",
+          "training_method": "old_center",
+          "cfg_mode": "cfg1",
+          "config_sha256": "a679811c599f5834844d4842d78bc908b0130963061d122da28ee056cf6be870",
+          "adapter_model_sha256": "5eccdbcc689021e49c866843bc653580eea45a38847c1aa8fe18e4c99f99a8f0"
+        },
+        "dual": {
+          "run_id": "control-pickscore-cfg1dual_steps10_u100_54871880",
+          "checkpoint_step": 100,
+          "checkpoint_storage": "checkpoints",
+          "task": "control-pickscore",
+          "training_method": "old_center",
+          "cfg_mode": "cfg1_dual",
+          "config_sha256": "489375e2fe3b37c4fbc0c68a61c22d1466fa2d6d1633900d6c39638603713fe6",
+          "adapter_model_sha256": "fa0b1c5fd4e608f07f80004c1574e7c793c334f57ef1e0ac19c4c2e1eebb9b1d"
+        },
+        "matched": {
+          "run_id": "pickscore_steps10_u100_54872044",
+          "checkpoint_step": 100,
+          "checkpoint_storage": "checkpoints",
+          "task": "pickscore",
+          "training_method": "v5flow",
+          "cfg_mode": "cfg4_rollout",
+          "config_sha256": "93206f16cc7d76ab2c8306ba72b0939584f0648b1318325aed031c225ebd40f8",
+          "adapter_model_sha256": "5e626ff5d40243cdf746a240fbee91fd79c170c9369eef147438480c895aae83"
+        }
+      }
+    }
+  ]
+}

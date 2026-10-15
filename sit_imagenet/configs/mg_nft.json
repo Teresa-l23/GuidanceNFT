@@ -1,0 +1,57 @@
+{
+  "schema_version": 2,
+  "method": "original",
+  "run_name": "mg_nft",
+  "output_root": "${GUIDANCENFT_ASSETS}/runs/model_guidance_nft",
+  "init_checkpoint": "${GUIDANCENFT_ASSETS}/checkpoints/model_guidance/SiT-XL-2-MG.pt",
+  "model_key": "SiT-XL/2",
+  "image_size": 256,
+  "num_classes": 1000,
+  "vae": "ema",
+  "seed": 42,
+  "mixed_precision": "bf16",
+  "max_outer_steps": 400,
+  "rollout": {
+    "sampler": "sde",
+    "sampling_steps": 10,
+    "groups_global": 48,
+    "samples_per_class": 24,
+    "batch_size": 24,
+    "preview_samples": 48
+  },
+  "reward": {
+    "name": "pickscore_imagenet",
+    "processor_name": "laion/CLIP-ViT-H-14-laion2B-s32B-b79K",
+    "model_name": "yuvalkirstain/PickScore_v1",
+    "prompt_template": "an image of {class_name}",
+    "batch_size": 8,
+    "dtype": "fp32",
+    "divide_by_26": true,
+    "advantage_epsilon": 0.0001
+  },
+  "training": {
+    "batch_size": 288,
+    "timestep_fraction": 0.99,
+    "inner_epochs": 1,
+    "learning_rate": 3e-06,
+    "weight_decay": 0.0,
+    "beta": 1.0,
+    "kl_beta": 0.0001,
+    "advantage_clip": 5.0,
+    "max_grad_norm": 1.0,
+    "old_policy_decay_type": 1
+  },
+  "center": {
+    "batch_size": 288,
+    "timestep_fraction": 0.99,
+    "inner_epochs": 1,
+    "learning_rate": 3e-06,
+    "weight_decay": 0.0,
+    "ema_decay": 0.9,
+    "snapshot": "ema"
+  },
+  "checkpoint": {
+    "save_every": 10,
+    "keep": 3
+  }
+}

@@ -1,0 +1,102 @@
+diff --git a/toy_example.py b/toy_example.py
+index 0e0b9f3..8ae6e78 100644
+--- a/toy_example.py
++++ b/toy_example.py
+@@ -12,6 +12,7 @@ import copy
+ import pickle
+ import warnings
+ import functools
++from typing import NamedTuple
+ import numpy as np
+ import torch
+ import matplotlib.pyplot as plt
+@@ -90,16 +91,28 @@ class GaussianMixture(torch.nn.Module):
+         return y + self.mu[i] # [..., dim]
+ 
+ #----------------------------------------------------------------------------
+-# Construct a ground truth 2D distribution for the given set of classes
+-# ('A', 'B', or 'AB').
++# Construct the recursive tree geometry used by the ground truth distribution.
++
++class TreeSegment(NamedTuple):
++    cls: str
++    path: str
++    depth: int
++    start: tuple[float, float]
++    end: tuple[float, float]
++    support_start: tuple[float, float]
++    support_end: tuple[float, float]
++
+ 
+ @functools.lru_cache(None)
+-def gt(classes='A', device=torch.device('cpu'), seed=2, origin=np.array([0.0030, 0.0325]), scale=np.array([1.3136, 1.3844])):
++def _tree_spec(seed=2, origin=(0.0030, 0.0325), scale=(1.3136, 1.3844)):
+     rnd = np.random.RandomState(seed)
++    origin = np.asarray(origin)
++    scale = np.asarray(scale)
+     comps = []
++    segments = []
+ 
+     # Recursive function to generate a given branch of the distribution.
+-    def recurse(cls, depth, pos, angle):
++    def recurse(cls, depth, pos, angle, path):
+         if depth >= 7:
+             return
+ 
+@@ -108,6 +121,19 @@ def gt(classes='A', device=torch.device('cpu'), seed=2, origin=np.array([0.0030,
+         dist = 0.292 * (0.8 ** depth) * (rnd.randn() * 0.2 + 1)
+         thick = 0.2 * (0.8 ** depth) / dist
+         size = scale * dist * 0.06
++        start = pos * scale
++        end = (pos + dir * dist) * scale
++        support_start = (pos + dir * dist * 0.07) * scale
++        support_end = (pos + dir * dist * 0.93) * scale
++        segments.append(TreeSegment(
++            cls=cls,
++            path=path,
++            depth=depth,
++            start=tuple(float(x) for x in start),
++            end=tuple(float(x) for x in end),
++            support_start=tuple(float(x) for x in support_start),
++            support_end=tuple(float(x) for x in support_end),
++        ))
+ 
+         # Represent the current branch as a sequence of Gaussian components.
+         for t in np.linspace(0.07, 0.93, num=8):
+@@ -118,13 +144,30 @@ def gt(classes='A', device=torch.device('cpu'), seed=2, origin=np.array([0.0030,
+             c.Sigma = (np.outer(dir, dir) + (np.eye(2) - np.outer(dir, dir)) * (thick ** 2)) * np.outer(size, size)
+             comps.append(c)
+ 
+-        # Generate each child branch.
+-        for sign in [1, -1]:
+-            recurse(cls=cls, depth=(depth + 1), pos=(pos + dir * dist), angle=(angle + sign * (0.7 ** depth) * (rnd.randn() * 0.2 + 1)))
++        # L/R encode positive/negative angular turns, respectively.
++        for sign, turn in [(1, 'L'), (-1, 'R')]:
++            recurse(cls=cls, depth=(depth + 1), pos=(pos + dir * dist), angle=(angle + sign * (0.7 ** depth) * (rnd.randn() * 0.2 + 1)), path=(path + turn))
++
++    recurse(cls='A', depth=0, pos=origin, angle=(np.pi * 0.25), path='')
++    recurse(cls='B', depth=0, pos=origin, angle=(np.pi * 1.25), path='')
++    return tuple(comps), tuple(segments)
++
++
++def tree_segments(classes='A', seed=2, origin=(0.0030, 0.0325), scale=(1.3136, 1.3844)):
++    """Return immutable centerline metadata for the requested toy tree classes."""
+ 
+-    # Generate each class.
+-    recurse(cls='A', depth=0, pos=origin, angle=(np.pi * 0.25))
+-    recurse(cls='B', depth=0, pos=origin, angle=(np.pi * 1.25))
++    if not classes or any(cls not in 'AB' for cls in classes):
++        raise ValueError("classes must be 'A', 'B', or 'AB'")
++    _comps, segments = _tree_spec(seed, tuple(origin), tuple(scale))
++    return tuple(segment for segment in segments if segment.cls in classes)
++
++#----------------------------------------------------------------------------
++# Construct a ground truth 2D distribution for the given set of classes
++# ('A', 'B', or 'AB').
++
++@functools.lru_cache(None)
++def gt(classes='A', device=torch.device('cpu'), seed=2, origin=np.array([0.0030, 0.0325]), scale=np.array([1.3136, 1.3844])):
++    comps, _segments = _tree_spec(seed, tuple(origin), tuple(scale))
+ 
+     # Construct a GaussianMixture object for the selected classes.
+     sel = [c for c in comps if c.cls in classes]

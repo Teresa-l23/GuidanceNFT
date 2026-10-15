@@ -1,0 +1,69 @@
+{
+  "schema_version": 2,
+  "task": "geneval",
+  "cfg_mode": "cfg4_rollout",
+  "world_size": 2,
+  "reward_fn": {"geneval": 1.0},
+  "sampling": {
+    "rollout_steps": 10,
+    "eval_steps": 40,
+    "resolution": 512,
+    "num_image_per_prompt": 24,
+    "num_groups": 48,
+    "max_train_batch_size": 24,
+    "test_batch_size": 14
+  },
+  "training": {
+    "gradient_steps_per_epoch": 1,
+    "max_train_steps": 200,
+    "seed": 42,
+    "beta": 1.0,
+    "kl_beta": 0.0001,
+    "decay_type": 1,
+    "save_freq": 50,
+    "latest_save_freq": 1,
+    "eval_freq": 100
+  },
+  "v5flow": {
+    "enabled": true,
+    "center": "v5",
+    "init": "old_once",
+    "timestep_sampling": "rollout_schedule",
+    "num_inner_epochs": 1,
+    "learning_rate": 0.0003,
+    "max_grad_norm": 1.0,
+    "use_ema": true,
+    "ema_decay": 0.9,
+    "snapshot": "ema",
+    "theta_lifecycle": "persistent",
+    "theta_ema_decay": 0.9,
+    "loss_space": "reconstruction",
+    "normalize_branch_mae": true,
+    "warmup": {
+      "enabled": true,
+      "export_only": false,
+      "output_path": "",
+      "seed": 2042,
+      "num_rollout_batches": 24,
+      "num_holdout_batches": 4,
+      "num_inner_epochs": 100,
+      "num_train_timesteps": 4,
+      "gradient_accumulation_steps": 24,
+      "timestep_sampling": "continuous_uniform",
+      "num_refreshes": 1,
+      "checkpoint_root": "",
+      "keep_checkpoints": 2,
+      "prompt_pool": "train",
+      "parameter_dtype": "model"
+    }
+  },
+  "evaluation": {
+    "auto_submit": true,
+    "save_images": true,
+    "dataset": "geneval",
+    "reward_fn": {"geneval": 1.0},
+    "batch_size": 14,
+    "expected_samples": 2212,
+    "guidance_scales": [1.0, 4.0]
+  }
+}

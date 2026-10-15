@@ -1,0 +1,50 @@
+{
+  "cfg_mode": "cfg1",
+  "cfg_unconditional_source": "same_model",
+  "evaluation": {
+    "auto_submit": false,
+    "save_images": true
+  },
+  "reward_fn": {
+    "pickscore": 1.0
+  },
+  "sampling": {
+    "eval_steps": 40,
+    "max_train_batch_size": 24,
+    "num_groups": 48,
+    "num_image_per_prompt": 24,
+    "resolution": 512,
+    "rollout_steps": 10,
+    "test_batch_size": 16
+  },
+  "schema_version": 2,
+  "task": "control-pickscore",
+  "training": {
+    "beta": 1.0,
+    "decay_type": 1,
+    "eval_freq": 50,
+    "gradient_steps_per_epoch": 1,
+    "kl_beta": 0.0001,
+    "latest_save_freq": 1,
+    "max_train_steps": 200,
+    "save_freq": 50,
+    "seed": 42
+  },
+  "v5flow": {
+    "center": "old",
+    "ema_decay": 0.9,
+    "enabled": false,
+    "init": "old_once",
+    "learning_rate": 0.0003,
+    "loss_space": "reconstruction",
+    "max_grad_norm": 1.0,
+    "normalize_branch_mae": true,
+    "num_inner_epochs": 1,
+    "snapshot": "ema",
+    "theta_ema_decay": 0.9,
+    "theta_lifecycle": "persistent",
+    "timestep_sampling": "rollout_schedule",
+    "use_ema": true
+  },
+  "world_size": 2
+}

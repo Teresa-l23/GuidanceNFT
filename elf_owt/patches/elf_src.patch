@@ -1,0 +1,780 @@
+diff --git a/src/configs/config.py b/src/configs/config.py
+index 58c72e7..b005bf6 100644
+--- a/src/configs/config.py
++++ b/src/configs/config.py
+@@ -31,16 +31,34 @@ class Config:
+     # Dataset
+     data_path: str = None
+     eval_data_path: str = None
++    # Optional row-aligned original-text corpus used by WMT reward scoring.
++    wmt_tokenized_data_revision: str = None
++    wmt_validation_data_revision: str = None
++    wmt_reference_data_path: str = None
++    wmt_reference_data_name: str = None
++    wmt_reference_data_split: str = None
++    wmt_reference_data_revision: str = None
++    wmt_source_language: str = None
++    wmt_target_language: str = None
++    # Immutable embedded XSum snapshots and their upstream provenance.
++    xsum_train_data_revision: str = None
++    xsum_train_num_rows: int = None
++    xsum_validation_data_revision: str = None
++    xsum_validation_num_rows: int = None
++    xsum_raw_data_revision: str = None
++    xsum_target_max_tokens: int = None
+     max_length: int = 128
+     max_input_length: int = None  # Max length for conditioning input (e.g., prompt or encoder input); None = no limit
+     pad_token: str = "pad"  # "pad" or "eos" - which token to use for padding
+ 
+     # Tokenizer
+     tokenizer_name: str = None  # Defaults to encoder_model_name if not set
++    tokenizer_revision: str = None
+ 
+     # Encoder
+     encoder_model_name: str = "t5-small"
+     encoder_checkpoint: str = None
++    encoder_checkpoint_revision: str = None
+     latent_mean: float = 0.0
+     latent_std: float = 1.0
+ 
+diff --git a/src/configs/training_configs/train_de-en_ELF-B-pinned.yml b/src/configs/training_configs/train_de-en_ELF-B-pinned.yml
+new file mode 100644
+index 0000000..04d3836
+--- /dev/null
++++ b/src/configs/training_configs/train_de-en_ELF-B-pinned.yml
+@@ -0,0 +1,69 @@
++# Dataset
++data_path: "embedded-language-flows/wmt14_de-en_train_t5"
++eval_data_path: "embedded-language-flows/wmt14_de-en_validation_t5"
++wmt_tokenized_data_revision: "aee21115965ee2b9d3d6d02ec2a72f4f998476d9"
++wmt_validation_data_revision: "bcc92bda4b07c329354843724c9d9ea740f30685"
++wmt_reference_data_path: "wmt/wmt14"
++wmt_reference_data_name: "de-en"
++wmt_reference_data_split: "train"
++wmt_reference_data_revision: "b199e406369ec1b7634206d3ded5ba45de2fe696"
++wmt_source_language: "de"
++wmt_target_language: "en"
++max_length: 128
++max_input_length: 64
++pad_token: eos
++
++# Encoder/tokenizer
++tokenizer_name: google-t5/t5-small
++tokenizer_revision: "df1b051c49625cf57a3d0d8d3863ed4d13564fe4"
++encoder_model_name: t5-small
++encoder_checkpoint: "embedded-language-flows/t5_small_encoder_jax/t5_small_encoder_jax.pkl"
++encoder_checkpoint_revision: "c77f0a84a7549dd1ca4b3976840150d46e9da7dd"
++latent_mean: 0.0
++latent_std: 0.2
++
++# Model architecture
++model: ELF-B
++bottleneck_dim: 128
++num_time_tokens: 4
++num_self_cond_cfg_tokens: 4
++num_model_mode_tokens: 4
++
++# Denoiser objective
++denoiser_p_mean: -1.5
++denoiser_p_std: 0.8
++denoiser_noise_scale: 2.0
++t_eps: 0.05
++time_schedule: "logit_normal"
++
++# Decoder objective
++decoder_prob: 0.2
++decoder_noise_scale: 1.0
++decoder_p_mean: 0.8
++decoder_p_std: 0.8
++
++# Conditioning / CFG
++label_drop_prob: 0.1
++self_cond_prob: 0.5
++
++# Upstream training fields retained for architecture/config compatibility
++epochs: 100
++global_batch_size: 512
++blr: 0.001
++weight_decay: 0.0
++warmup_steps: 5000
++optimizer: muon
++ema_decay1: 0.9999
++sampling_configs_path: "configs/sampling_configs/cond_sampling_configs.yml"
++num_samples: 5000
++log_freq: 100
++save_freq: 10
++eval_freq: 10
++output_dir: "outputs/elf_b-wmt-de-en"
++hf_repo_id: null
++resume: null
++use_wandb: true
++wandb_project: elf
++wandb_entity:
++wandb_run_name: elf_b-wmt-de-en
++seed: 42
+diff --git a/src/configs/training_configs/train_de-en_ELF-B.yml b/src/configs/training_configs/train_de-en_ELF-B.yml
+index dc8b6d8..2d6c92b 100755
+--- a/src/configs/training_configs/train_de-en_ELF-B.yml
++++ b/src/configs/training_configs/train_de-en_ELF-B.yml
+@@ -1,6 +1,14 @@
+ # Dataset
+ data_path: "embedded-language-flows/wmt14_de-en_train_t5"
+ eval_data_path: "embedded-language-flows/wmt14_de-en_validation_t5"
++wmt_tokenized_data_revision: "aee21115965ee2b9d3d6d02ec2a72f4f998476d9"
++wmt_validation_data_revision: "bcc92bda4b07c329354843724c9d9ea740f30685"
++wmt_reference_data_path: "wmt/wmt14"
++wmt_reference_data_name: "de-en"
++wmt_reference_data_split: "train"
++wmt_reference_data_revision: "b199e406369ec1b7634206d3ded5ba45de2fe696"
++wmt_source_language: "de"
++wmt_target_language: "en"
+ max_length: 128
+ max_input_length: 64
+ pad_token: eos
+diff --git a/src/configs/training_configs/train_xsum_ELF-B.yml b/src/configs/training_configs/train_xsum_ELF-B.yml
+index 3b11df9..22f5236 100755
+--- a/src/configs/training_configs/train_xsum_ELF-B.yml
++++ b/src/configs/training_configs/train_xsum_ELF-B.yml
+@@ -1,13 +1,24 @@
+ # Dataset
+ data_path: "embedded-language-flows/xsum_train_t5"
+ eval_data_path: "embedded-language-flows/xsum_validation_t5"
++xsum_train_data_revision: "1d4f2647d92d9acc62e05df2b5fcab6d226b744d"
++xsum_train_num_rows: 204045
++xsum_validation_data_revision: "b0b4f5de92434d308eceeb9e38fd3f8d7d2b6a9e"
++xsum_validation_num_rows: 11332
++xsum_raw_data_revision: "7d4d486c2f8ef850b1a11aead99b894ff3dd7da9"
++xsum_target_max_tokens: 64
+ max_length: 1088
+ max_input_length: 1024
+ pad_token: eos
+ 
++# Tokenizer
++tokenizer_name: google-t5/t5-small
++tokenizer_revision: "df1b051c49625cf57a3d0d8d3863ed4d13564fe4"
++
+ # Encoder
+ encoder_model_name: t5-small
+ encoder_checkpoint: "embedded-language-flows/t5_small_encoder_jax/t5_small_encoder_jax.pkl"
++encoder_checkpoint_revision: "c77f0a84a7549dd1ca4b3976840150d46e9da7dd"
+ latent_mean: 0.0
+ latent_std: 0.2
+ 
+@@ -58,7 +69,7 @@ eval_freq: 10
+ # Output
+ output_dir: "outputs/elf_b-xsum"
+ hf_repo_id: null
+-resume: "outputs/elf_b-xsum"
++resume: null
+ 
+ # Wandb
+ use_wandb: true
+diff --git a/src/modules/layers.py b/src/modules/layers.py
+index 40dc173..22994da 100644
+--- a/src/modules/layers.py
++++ b/src/modules/layers.py
+@@ -18,6 +18,28 @@ ZERO_INIT = nn.initializers.constant(0.0)
+ NORMAL_INIT_002 = nn.initializers.normal(stddev=0.02)
+ 
+ 
++def apply_lora_delta(x, lora_params=None, scale=1.0):
++    """Return a LoRA delta for a Dense input without registering base params.
++
++    ``lora_params`` is an external pytree with ``a`` shaped ``[in, rank]`` and
++    ``b`` shaped ``[rank, out]``.  Keeping it outside Linen's ``params``
++    collection lets NFT freeze the exact pretrained ELF tree and maintain
++    independent current/old/center adapters.  ``scale`` is normally
++    ``lora_alpha / rank``.
++    """
++    if lora_params is None:
++        return None
++    a = lora_params["a"]
++    b = lora_params["b"]
++    if x.shape[-1] != a.shape[0] or a.shape[1] != b.shape[0]:
++        raise ValueError(
++            "Invalid LoRA shapes: "
++            f"input={x.shape[-1]}, a={a.shape}, b={b.shape}"
++        )
++    delta = jnp.matmul(jnp.matmul(x.astype(a.dtype), a), b)
++    return (delta * jnp.asarray(scale, dtype=delta.dtype)).astype(x.dtype)
++
++
+ def rotate_half(x):
+     """Rotate half the hidden dims of the input."""
+     x = rearrange(x, '... (d r) -> ... d r', r=2)
+@@ -160,15 +182,26 @@ class Attention(nn.Module):
+     proj_drop: float = 0.0
+ 
+     @nn.compact
+-    def __call__(self, x, rope_fn, attention_mask=None, deterministic=True):
++    def __call__(
++        self, x, rope_fn, attention_mask=None, deterministic=True,
++        lora_params=None, lora_scale=1.0,
++    ):
+         """x: (B, N, C). attention_mask: optional int mask (B, N), 1=valid, 0=padded."""
+         B, N, C = x.shape
+         head_dim = self.dim // self.num_heads
+         bias_init = DEFAULT_BIAS_INIT if self.qkv_bias else None
++        qkv_input = x
+         qkv = nn.Dense(
+             self.dim * 3, use_bias=self.qkv_bias,
+             kernel_init=DEFAULT_KERNEL_INIT, bias_init=bias_init, name='qkv',
+-        )(x)
++        )(qkv_input)
++        qkv_delta = apply_lora_delta(
++            qkv_input,
++            None if lora_params is None else lora_params.get("qkv"),
++            lora_scale,
++        )
++        if qkv_delta is not None:
++            qkv = qkv + qkv_delta
+         qkv = qkv.reshape(B, N, 3, self.num_heads, head_dim).transpose(2, 0, 3, 1, 4)
+         q, k, v = qkv[0], qkv[1], qkv[2]
+         if self.qk_norm:
+@@ -179,7 +212,18 @@ class Attention(nn.Module):
+             k = rope_fn(k)
+         x = scaled_dot_product_attention(q, k, v, attn_mask=attention_mask)
+         x = x.transpose(0, 2, 1, 3).reshape(B, N, C)
+-        x = nn.Dense(self.dim, kernel_init=DEFAULT_KERNEL_INIT, bias_init=DEFAULT_BIAS_INIT, name='proj')(x)
++        proj_input = x
++        x = nn.Dense(
++            self.dim, kernel_init=DEFAULT_KERNEL_INIT,
++            bias_init=DEFAULT_BIAS_INIT, name='proj',
++        )(proj_input)
++        proj_delta = apply_lora_delta(
++            proj_input,
++            None if lora_params is None else lora_params.get("proj"),
++            lora_scale,
++        )
++        if proj_delta is not None:
++            x = x + proj_delta
+         return nn.Dropout(rate=self.proj_drop, deterministic=deterministic)(x)
+ 
+ 
+diff --git a/src/modules/model.py b/src/modules/model.py
+index 4b8ad15..621fd2d 100755
+--- a/src/modules/model.py
++++ b/src/modules/model.py
+@@ -18,14 +18,21 @@ class ELFBlock(nn.Module):
+     proj_drop: float = 0.0
+ 
+     @nn.compact
+-    def __call__(self, x, rope_fn=None, attention_mask=None, deterministic=True):
++    def __call__(
++        self, x, rope_fn=None, attention_mask=None, deterministic=True,
++        lora_params=None, lora_scale=1.0,
++    ):
+         mlp_hidden_dim = int(self.hidden_size * self.mlp_ratio)
+ 
+         x_normed = RMSNorm(self.hidden_size, eps=1e-6, name='norm1')(x)
+         attn_out = Attention(
+             self.hidden_size, self.num_heads, qkv_bias=True, qk_norm=True,
+             attn_drop=self.attn_drop, proj_drop=self.proj_drop, name='attn',
+-        )(x_normed, rope_fn, attention_mask=attention_mask, deterministic=deterministic)
++        )(
++            x_normed, rope_fn, attention_mask=attention_mask,
++            deterministic=deterministic, lora_params=lora_params,
++            lora_scale=lora_scale,
++        )
+         x = x + attn_out
+ 
+         x_normed = RMSNorm(self.hidden_size, eps=1e-6, name='norm2')(x)
+@@ -76,8 +83,16 @@ class ELF(nn.Module):
+     def __call__(
+         self, x, t, attention_mask=None, deterministic=True,
+         self_cond_cfg_scale=None, decoder_step_active=None,
++        lora_params=None, lora_scale=1.0,
+     ):
+-        """x: (N, S, C) or (N, S, 2C) with self-cond. t: (N,). attention_mask: (N, S), 1=valid."""
++        """Run ELF with an optional external shared-transformer LoRA adapter.
++
++        ``x`` is ``(N, S, C)`` or ``(N, S, 2C)`` with self-conditioning.
++        The same attention adapter can be active in denoiser and decoder modes.
++        Decoder-specific ``mode_tokens`` and factored-unembedding parameters
++        remain in the separate base ``params`` tree and are therefore frozen
++        when an optimizer owns only ``lora_params``.
++        """
+         patch_size = 1
+         head_dim = self.hidden_size // self.num_heads
+         B = x.shape[0]
+@@ -134,7 +149,12 @@ class ELF(nn.Module):
+                 proj_drop=self.proj_drop if in_drop_range else 0.0,
+                 name=f'blocks_{i}',
+             )
+-            x = block(x, rope_fn=feat_rope, attention_mask=attention_mask, deterministic=deterministic)
++            block_lora = None if lora_params is None else lora_params.get(f'blocks_{i}')
++            x = block(
++                x, rope_fn=feat_rope, attention_mask=attention_mask,
++                deterministic=deterministic, lora_params=block_lora,
++                lora_scale=lora_scale,
++            )
+ 
+         x = x[:, prefix_len + model_mode_offset:]
+ 
+diff --git a/src/modules/t5_encoder.py b/src/modules/t5_encoder.py
+index f289af9..24c426e 100755
+--- a/src/modules/t5_encoder.py
++++ b/src/modules/t5_encoder.py
+@@ -2,6 +2,7 @@
+ """JAX/Flax T5 encoder used as a frozen text embedder."""
+ 
+ import logging
++import re
+ 
+ import jax
+ import jax.numpy as jnp
+@@ -555,8 +556,22 @@ class T5EncoderConfig:
+         self.dtype = dtype
+ 
+     @classmethod
+-    def from_pretrained(cls, model_name: str):
+-        """Create config from pretrained model name."""
++    def from_pretrained(
++        cls, model_name: str, *, revision: str | None = None
++    ):
++        """Create the local architecture config with pinned-model provenance.
++
++        Architecture values below are deliberately local constants; no Hub
++        config is downloaded here.  ``revision`` records and validates the
++        immutable revision used by the separately loaded tokenizer so callers
++        cannot accidentally pass a moving branch while believing this helper
++        fetched it.
++        """
++
++        if revision is not None and not re.fullmatch(r"[0-9a-f]{40}", revision):
++            raise ValueError(
++                "T5 encoder revision must be a full 40-character commit SHA"
++            )
+         # Common T5 configurations
+         configs = {
+             "t5-small": {
+@@ -592,11 +607,14 @@ class T5EncoderConfig:
+         }
+ 
+         if model_name in configs:
+-            return cls(**configs[model_name])
++            config = cls(**configs[model_name])
+         else:
+             # Default to t5-small config
+             log_for_0(f"Warning: Unknown model {model_name}, using t5-small config", level=logging.WARNING)
+-            return cls(**configs["t5-small"])
++            config = cls(**configs["t5-small"])
++        config.pretrained_model_name = model_name
++        config.pretrained_revision = revision
++        return config
+ 
+ 
+ class T5Encoder(nn.Module):
+@@ -675,13 +693,11 @@ def init_t5_encoder(
+     return params
+ 
+ 
+-def get_encoder(model_name: str, dtype):
++def get_encoder(model_name: str, dtype, *, revision: str | None = None):
+     """Get encoder config and model."""
+ 
+     log_for_0(f"Loading T5 Encoder: {model_name}...")
+-    config = T5EncoderConfig.from_pretrained(model_name)
++    config = T5EncoderConfig.from_pretrained(model_name, revision=revision)
+     config.dtype = dtype
+     model = T5Encoder(config=config)
+     return config, model, init_t5_encoder
+-
+-
+diff --git a/src/utils/checkpoint_utils.py b/src/utils/checkpoint_utils.py
+index 9ef4aed..dea604b 100644
+--- a/src/utils/checkpoint_utils.py
++++ b/src/utils/checkpoint_utils.py
+@@ -83,7 +83,7 @@ def save_checkpoint(state: Any, output_dir: str, step: int, hf_repo_id: str = No
+ # Encoder checkpoint (single pickle file)
+ # ============================================
+ 
+-def load_encoder_checkpoint(checkpoint_path: str):
++def load_encoder_checkpoint(checkpoint_path: str, *, revision: str | None = None):
+     """Load a pickled encoder checkpoint from HF first, then local fallback.
+ 
+     HF form: '<org>/<repo>/<filename>'.
+@@ -99,7 +99,7 @@ def load_encoder_checkpoint(checkpoint_path: str):
+     errors = []
+ 
+     try:
+-        hf_path = _download_hf_file(checkpoint_path)
++        hf_path = _download_hf_file(checkpoint_path, revision=revision)
+         if hf_path:
+             loaded_params = _load_pickle(hf_path)
+             loaded_from = "HF"
+@@ -131,7 +131,9 @@ def _load_pickle(path: str):
+         return pickle.load(f)
+ 
+ 
+-def _download_hf_file(path: str) -> Optional[str]:
++def _download_hf_file(
++    path: str, *, revision: str | None = None
++) -> Optional[str]:
+     """Download a single file from HF Hub and return its local cache path."""
+     hf_path = _split_hf_path(path, min_parts=3)
+     if hf_path is None:
+@@ -142,7 +144,12 @@ def _download_hf_file(path: str) -> Optional[str]:
+         from huggingface_hub import hf_hub_download
+ 
+         log_for_0(f"Downloading checkpoint file from HF: {repo_id}/{filename}")
+-        return hf_hub_download(repo_id=repo_id, filename=filename, repo_type="model")
++        return hf_hub_download(
++            repo_id=repo_id,
++            filename=filename,
++            repo_type="model",
++            revision=revision,
++        )
+     except Exception as e:
+         raise FileNotFoundError(f"HF checkpoint file not found: {path} ({e})") from e
+ 
+@@ -175,7 +182,9 @@ def find_latest_checkpoint(ckpt_dir: str, prefix: str = "checkpoint_"):
+     return all_ckpts[-1] if all_ckpts else None
+ 
+ 
+-def _download_hf_checkpoint(checkpoint_path: str) -> Optional[str]:
++def _download_hf_checkpoint(
++    checkpoint_path: str, *, revision: str | None = None
++) -> Optional[str]:
+     """Download an HF checkpoint snapshot and return the local checkpoint path."""
+     hf_path = _split_hf_path(checkpoint_path, min_parts=2)
+     if hf_path is None:
+@@ -188,6 +197,7 @@ def _download_hf_checkpoint(checkpoint_path: str) -> Optional[str]:
+     local_dir = snapshot_download(
+         repo_id=repo_id, repo_type="model",
+         allow_patterns=[f"{sub_path}/**"] if sub_path else None,
++        revision=revision,
+     )
+     return os.path.join(local_dir, sub_path) if sub_path else local_dir
+ 
+@@ -307,3 +317,66 @@ def load_checkpoint(checkpoint_path: str, state_template: Any) -> Tuple[Any, int
+     step, epoch = int(ckpt["step"]), int(ckpt["epoch"])
+     log_for_0(f"Loaded {loaded_from} checkpoint from step {step} (epoch {epoch})")
+     return restored_state, step
++
++
++def load_pretrained_params(
++    checkpoint_path: str,
++    params_template: Any,
++    *,
++    revision: str | None = None,
++) -> Tuple[Any, int]:
++    """Load only the immutable model parameters needed for inference/fine-tuning.
++
++    Released ELF checkpoints may intentionally omit optimizer state.  Building a
++    full ``TrainState`` target would then either require the original optimizer
++    structure or fail on the missing ``opt_state`` leaf.  This loader restores
++    only ``params``, ``ema_params1``, and ``step`` and returns the EMA tree when
++    present.  Extra checkpoint leaves are ignored by Flax deserialization.
++    """
++
++    if not checkpoint_path:
++        raise ValueError("checkpoint_path must be nonempty")
++
++    log_for_0(f"Loading pretrained ELF parameters from {checkpoint_path}...")
++    target = {
++        "params": params_template,
++        "ema_params1": params_template,
++        "step": 0,
++    }
++    checkpoint, loaded_from = None, None
++    errors = []
++    local_path = _local_path(checkpoint_path)
++
++    if os.path.exists(local_path):
++        try:
++            checkpoint = _restore_checkpoint(local_path, target)
++            loaded_from = "local"
++        except Exception as error:
++            errors.append(f"local: {error}")
++
++    if checkpoint is None:
++        try:
++            hf_path = _download_hf_checkpoint(
++                checkpoint_path, revision=revision
++            )
++            if hf_path:
++                checkpoint = _restore_checkpoint(hf_path, target)
++                loaded_from = "HF"
++        except Exception as error:
++            errors.append(f"HF: {error}")
++
++    if checkpoint is None:
++        raise ValueError(
++            f"Failed to load pretrained parameters from {checkpoint_path}. "
++            f"Tried: {'; '.join(errors)}"
++        )
++    if "params" not in checkpoint:
++        raise ValueError("pretrained checkpoint restore is missing params")
++
++    selected_params = checkpoint.get("ema_params1", checkpoint["params"])
++    if selected_params is None:
++        selected_params = checkpoint["params"]
++    params = jax.tree_util.tree_map(jnp.array, selected_params)
++    step = int(checkpoint.get("step", 0))
++    log_for_0(f"Loaded immutable pretrained parameters from {loaded_from} at step {step}")
++    return params, step
+diff --git a/src/utils/data_utils.py b/src/utils/data_utils.py
+index 35ae09d..eb7f54a 100644
+--- a/src/utils/data_utils.py
++++ b/src/utils/data_utils.py
+@@ -146,17 +146,35 @@ def _looks_like_save_to_disk_arrow(ds) -> bool:
+     )
+ 
+ 
+-def load_dataset_split(path: str, dataset_cache_dir=None):
++def load_dataset_split(
++    path: str,
++    dataset_cache_dir=None,
++    *,
++    name: Optional[str] = None,
++    split: Optional[str] = None,
++    revision: Optional[str] = None,
++    numpy_format: bool = True,
++):
+     """Load a dataset. Tries HuggingFace Hub first; falls back to local on-disk Arrow.
+ 
+     For HF repos uploaded via `dataset.save_to_disk()` instead of `push_to_hub()`,
+     `load_dataset` silently returns a 1-row dataset of internal metadata. We detect
+-    that and re-download the repo, then load it via `load_from_disk`.
++    that and re-download the repo, then load it via `load_from_disk`.  ``name``,
++    ``split``, and ``revision`` select an explicit Hub dataset snapshot; those
++    requests intentionally propagate Hub errors instead of being mistaken for a
++    local ``save_to_disk`` path.
+     """
+     ds = None
++    load_kwargs = {"cache_dir": dataset_cache_dir}
++    if split is not None:
++        load_kwargs["split"] = split
++    if revision is not None:
++        load_kwargs["revision"] = revision
+     try:
+-        ds = hf_load_dataset(path, cache_dir=dataset_cache_dir)
++        ds = hf_load_dataset(path, name, **load_kwargs)
+     except Exception:
++        if name is not None or split is not None or revision is not None:
++            raise
+         ds = load_from_disk(path)
+ 
+     # Normalize DatasetDict -> single split before detection.
+@@ -176,7 +194,10 @@ def load_dataset_split(path: str, dataset_cache_dir=None):
+             f"re-downloading via snapshot_download + load_from_disk."
+         )
+         local_dir = snapshot_download(
+-            repo_id=path, repo_type="dataset", cache_dir=dataset_cache_dir,
++            repo_id=path,
++            repo_type="dataset",
++            cache_dir=dataset_cache_dir,
++            revision=revision,
+         )
+         ds = load_from_disk(local_dir)
+         if isinstance(ds, DatasetDict):
+@@ -187,7 +208,8 @@ def load_dataset_split(path: str, dataset_cache_dir=None):
+                 )
+             ds = ds[splits[0]]
+ 
+-    ds.set_format(type="numpy", columns=ds.column_names)
++    if numpy_format:
++        ds.set_format(type="numpy", columns=ds.column_names)
+     return ds
+ 
+ 
+diff --git a/src/utils/generation_utils.py b/src/utils/generation_utils.py
+index 7477657..f185858 100755
+--- a/src/utils/generation_utils.py
++++ b/src/utils/generation_utils.py
+@@ -61,6 +61,7 @@ def shift_left(x, shift_per_sample, pad_value=0, axis=1):
+ def _sample_step_for_scan(
+     model_apply_fn, model_params, config, sampling_config: SamplingConfig,
+     cfg_scale, self_cond_cfg_scale, cond_seq, cond_seq_mask, rng=None,
++    lora_params=None, lora_scale=1.0,
+ ):
+     """Create a scan-compatible step function.
+ 
+@@ -73,6 +74,7 @@ def _sample_step_for_scan(
+         config=config,
+         cfg_scale=cfg_scale, self_cond_cfg_scale=self_cond_cfg_scale,
+         cond_seq=cond_seq, cond_seq_mask=cond_seq_mask,
++        lora_params=lora_params, lora_scale=lora_scale,
+     )
+ 
+     if method == "sde":
+@@ -109,6 +111,7 @@ def _generate_samples_single_batch(
+     model_params, model_apply_fn, rng: PRNGKey, z: Array, t_steps: Array,
+     cond_seq: Array, cond_seq_mask: Array, config: Config, sampling_config: SamplingConfig,
+     cfg_scale: float, self_cond_cfg_scale: float,
++    lora_params=None, lora_scale=1.0,
+ ) -> Array:
+     """Generate samples for a single batch (pmap-compatible, uses lax.scan)."""
+     method = sampling_config.sampling_method
+@@ -121,6 +124,7 @@ def _generate_samples_single_batch(
+         config=config,
+         cfg_scale=cfg_scale, self_cond_cfg_scale=self_cond_cfg_scale,
+         cond_seq=cond_seq, cond_seq_mask=cond_seq_mask,
++        lora_params=lora_params, lora_scale=lora_scale,
+     )
+ 
+     z = restore_cond(z, cond_seq, cond_seq_mask)
+@@ -141,8 +145,11 @@ def _generate_samples_single_batch(
+     return z
+ 
+ 
+-def _dlm_decode_batch(z, model_params, model_apply_fn, t_final_val, config, self_cond_cfg_scale):
+-    """Decode z→tokens with the DLM decoder head."""
++def _dlm_decoder_logits(
++    z, model_params, model_apply_fn, t_final_val, config, self_cond_cfg_scale,
++    lora_params=None, lora_scale=1.0,
++):
++    """Return decoder logits with an optional shared-transformer LoRA."""
+     batch_size = z.shape[0]
+     t_final = jnp.full((batch_size,), t_final_val, dtype=z.dtype)
+     self_cond_cfg_scale_batch = (
+@@ -155,6 +162,26 @@ def _dlm_decode_batch(z, model_params, model_apply_fn, t_final_val, config, self
+         deterministic=True,
+         self_cond_cfg_scale=self_cond_cfg_scale_batch,
+         decoder_step_active=jnp.array(True),
++        lora_params=lora_params,
++        lora_scale=lora_scale,
++    )
++    return decoder_logits
++
++
++def _dlm_decode_batch(
++    z, model_params, model_apply_fn, t_final_val, config, self_cond_cfg_scale,
++    lora_params=None, lora_scale=1.0,
++):
++    """Decode z→tokens with the DLM decoder head."""
++    decoder_logits = _dlm_decoder_logits(
++        z=z,
++        model_params=model_params,
++        model_apply_fn=model_apply_fn,
++        t_final_val=t_final_val,
++        config=config,
++        self_cond_cfg_scale=self_cond_cfg_scale,
++        lora_params=lora_params,
++        lora_scale=lora_scale,
+     )
+     return jnp.argmax(decoder_logits, axis=-1)
+ 
+@@ -229,5 +256,3 @@ def _setup_generation(state, config, batch_size, header):
+     log_for_0(f"Per-device batch size: {per_device_batch}, effective batch size: {effective_batch_size}")
+ 
+     return state_unreplicated, model_apply_fn, model_params_replicated, d_model, num_local_devices, effective_batch_size
+-
+-
+diff --git a/src/utils/metrics_utils.py b/src/utils/metrics_utils.py
+index 9feb674..2c39ffa 100644
+--- a/src/utils/metrics_utils.py
++++ b/src/utils/metrics_utils.py
+@@ -270,5 +270,6 @@ class Metrics:
+         return {
+             "ppl": float(self.gen_ppl.compute()),
+             "per_sample_ppl": per_sample_ppl,
++            "per_sample_entropy": per_sample_entropy,
+             "mean_entropy": sum(per_sample_entropy) / len(per_sample_entropy),
+         }
+diff --git a/src/utils/sampling_utils.py b/src/utils/sampling_utils.py
+index 7a3f666..794a258 100644
+--- a/src/utils/sampling_utils.py
++++ b/src/utils/sampling_utils.py
+@@ -125,6 +125,7 @@ def net_out_to_v_x(net_out, z, t, t_eps=5e-2):
+ def _forward_sample_self_cond(
+     model_apply_fn, model_params, z, t_batch, x_pred_prev, config,
+     self_cond_cfg_scale, cond_seq, cond_seq_mask,
++    lora_params=None, lora_scale=1.0,
+ ):
+     """Forward pass with self-conditioning."""
+     t_eps = config.t_eps
+@@ -139,6 +140,7 @@ def _forward_sample_self_cond(
+         net_out_cond = model_apply_fn(
+             {"params": model_params}, z_input_cond, t_batch, deterministic=True,
+             self_cond_cfg_scale=self_cond_scale_batch,
++            lora_params=lora_params, lora_scale=lora_scale,
+         )
+         v_cond, x_cond = net_out_to_v_x(net_out_cond, z, t_batch, t_eps)
+         return _restore_vx(v_cond, x_cond)
+@@ -147,6 +149,7 @@ def _forward_sample_self_cond(
+     if self_cond_prob == 0:
+         net_out = model_apply_fn(
+             {"params": model_params}, z, t_batch, deterministic=True,
++            lora_params=lora_params, lora_scale=lora_scale,
+         )
+         v, x = net_out_to_v_x(net_out, z, t_batch, t_eps)
+         return _restore_vx(v, x)
+@@ -157,6 +160,7 @@ def _forward_sample_self_cond(
+         z_input_uncond = jnp.concatenate([z, z_uncond], axis=-1)
+         net_out_uncond = model_apply_fn(
+             {"params": model_params}, z_input_uncond, t_batch, deterministic=True,
++            lora_params=lora_params, lora_scale=lora_scale,
+         )
+         v_uncond, x_uncond = net_out_to_v_x(net_out_uncond, z, t_batch, t_eps)
+         v_uncond, x_uncond = _restore_vx(v_uncond, x_uncond)
+@@ -166,6 +170,7 @@ def _forward_sample_self_cond(
+     z_input_cond = jnp.concatenate([z, x_pred_prev], axis=-1)
+     net_out_cond = model_apply_fn(
+         {"params": model_params}, z_input_cond, t_batch, deterministic=True,
++        lora_params=lora_params, lora_scale=lora_scale,
+     )
+     v_cond, x_cond = net_out_to_v_x(net_out_cond, z, t_batch, t_eps)
+     v_cond, x_cond = _restore_vx(v_cond, x_cond)
+@@ -181,17 +186,19 @@ def _forward_sample_self_cond(
+ def _forward_sample(
+     model_apply_fn, model_params, z, t_batch, x_pred_prev, config,
+     cfg_scale, self_cond_cfg_scale, cond_seq, cond_seq_mask,
++    lora_params=None, lora_scale=1.0,
+ ):
+     """Forward pass with optional self-conditioning and CFG."""
+     v_cond, x_cond = _forward_sample_self_cond(
+         model_apply_fn, model_params, z, t_batch, x_pred_prev, config,
+         self_cond_cfg_scale=self_cond_cfg_scale,
+         cond_seq=cond_seq, cond_seq_mask=cond_seq_mask,
++        lora_params=lora_params, lora_scale=lora_scale,
+     )
+     if cfg_scale == 1.0:
+         return v_cond, x_cond
+ 
+-    # Unconditional forward: zero out cond prefix, no self-cond state, no restore
++    # Source-null forward: zero the source prefix and retain target-side SC.
+     z_uncond = restore_cond(z, jnp.zeros_like(z), cond_seq_mask)
+     x_pred_prev_uncond = (
+         None if x_pred_prev is None
+@@ -201,6 +208,7 @@ def _forward_sample(
+         model_apply_fn, model_params, z_uncond, t_batch, x_pred_prev_uncond, config,
+         self_cond_cfg_scale=self_cond_cfg_scale,
+         cond_seq=jnp.zeros_like(cond_seq), cond_seq_mask=cond_seq_mask,
++        lora_params=lora_params, lora_scale=lora_scale,
+     )
+ 
+     v_out = v_uncond + cfg_scale * (v_cond - v_uncond)
+@@ -212,7 +220,7 @@ def _forward_sample(
+ def _ode_step(
+     model_apply_fn, model_params, z, t, t_next, x_pred_prev,
+     config, cfg_scale, self_cond_cfg_scale,
+-    cond_seq, cond_seq_mask,
++    cond_seq, cond_seq_mask, lora_params=None, lora_scale=1.0,
+ ):
+     """Single ODE (Euler) step for sampling."""
+     t_batch = jnp.full((z.shape[0],), t)
+@@ -222,6 +230,7 @@ def _ode_step(
+         config=config,
+         cfg_scale=cfg_scale, self_cond_cfg_scale=self_cond_cfg_scale,
+         cond_seq=cond_seq, cond_seq_mask=cond_seq_mask,
++        lora_params=lora_params, lora_scale=lora_scale,
+     )
+     return z + (t_next - t) * v_pred, x_pred
+ 
+@@ -231,6 +240,7 @@ def _sde_step(
+     model_apply_fn, model_params, z, t, t_next, x_pred_prev,
+     config, cfg_scale, self_cond_cfg_scale,
+     cond_seq, cond_seq_mask, gamma, rng,
++    lora_params=None, lora_scale=1.0,
+ ):
+     """Per-step SDE-style sampler with hybrid (t-and-step) noise scaling.
+ 
+@@ -250,5 +260,6 @@ def _sde_step(
+         config=config,
+         cfg_scale=cfg_scale, self_cond_cfg_scale=self_cond_cfg_scale,
+         cond_seq=cond_seq, cond_seq_mask=cond_seq_mask,
++        lora_params=lora_params, lora_scale=lora_scale,
+     )
+     return z_back + (t_next - t_back) * v_pred, x_pred

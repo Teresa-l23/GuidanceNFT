@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.egg-info/
+third_party/
+sd35/baselines/diffusion_nft/upstream/
+assets/
+runs/
+wandb/
+*.pt
+*.msgpack
+*.safetensors

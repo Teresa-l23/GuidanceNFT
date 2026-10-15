@@ -1,0 +1,67 @@
+{
+  "cfg_mode": "cfg4_rollout",
+  "cfg_unconditional_source": "same_model",
+  "evaluation": {
+    "auto_submit": false,
+    "save_images": true
+  },
+  "reward_fn": {
+    "pickscore": 1.0
+  },
+  "sampling": {
+    "eval_steps": 40,
+    "max_train_batch_size": 24,
+    "num_groups": 48,
+    "num_image_per_prompt": 24,
+    "resolution": 512,
+    "rollout_steps": 10,
+    "test_batch_size": 16
+  },
+  "schema_version": 2,
+  "task": "control-pickscore",
+  "training": {
+    "beta": 1.0,
+    "decay_type": 1,
+    "eval_freq": 50,
+    "gradient_steps_per_epoch": 1,
+    "kl_beta": 0.0001,
+    "latest_save_freq": 1,
+    "max_train_steps": 200,
+    "save_freq": 50,
+    "seed": 42
+  },
+  "v5flow": {
+    "center": "v5",
+    "ema_decay": 0.9,
+    "enabled": true,
+    "init": "old_once",
+    "learning_rate": 0.0003,
+    "loss_space": "reconstruction",
+    "max_grad_norm": 1.0,
+    "normalize_branch_mae": true,
+    "num_inner_epochs": 1,
+    "snapshot": "ema",
+    "theta_ema_decay": 0.9,
+    "theta_lifecycle": "persistent",
+    "timestep_sampling": "rollout_schedule",
+    "use_ema": true,
+    "warmup": {
+      "checkpoint_root": "",
+      "enabled": true,
+      "export_only": false,
+      "gradient_accumulation_steps": 24,
+      "keep_checkpoints": 2,
+      "num_holdout_batches": 4,
+      "num_inner_epochs": 100,
+      "num_refreshes": 1,
+      "num_rollout_batches": 24,
+      "num_train_timesteps": 4,
+      "output_path": "",
+      "parameter_dtype": "model",
+      "prompt_pool": "train",
+      "seed": 2042,
+      "timestep_sampling": "continuous_uniform"
+    }
+  },
+  "world_size": 2
+}
