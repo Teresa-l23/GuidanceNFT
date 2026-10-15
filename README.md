@@ -70,8 +70,11 @@ scripts/train.sh baselines/elf_nft/configs/owt_w3_conditional_only_shifted_cente
 
 ## Checkpoints
 
-The fine-tuned checkpoints reported in the paper will be published on the Hugging Face
-Hub together with their SHA-256 checksums; links will be added here.
+The fine-tuned checkpoints reported in the paper are on the Hugging Face Hub at
+[jiayin-l23/GuidanceNFT](https://huggingface.co/jiayin-l23/GuidanceNFT): SiT-XL/2 and Model
+Guidance weights, SD3.5-Medium LoRA adapters and ELF-B checkpoints, each folder with the
+SHA-256 of its files. `sit_imagenet/evaluate_released.py` evaluates the ImageNet weights with
+the paper protocol.
 
 ## License
 
