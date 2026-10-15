@@ -17,8 +17,7 @@ samples and uses it in both regression terms of the NFT loss.
 | [`sd35/`](sd35) | §4.1, explicit CFG on SD3.5-Medium | LoRA fine-tuning with NFT and GuidanceNFT on GenEval, OCR, PickScore and Learned3; evaluation matrix |
 | [`sit_imagenet/`](sit_imagenet) | §4.1 SiT-XL/2 (explicit CFG); §4.2 Model Guidance (built-in guidance) | Class-conditional ImageNet 256 with a class-name PickScore reward |
 | [`elf_owt/`](elf_owt) | §4.2, ELF-B on OpenWebText | Native self-conditioning CFG (SCCFG) in a continuous diffusion language model |
-
-GSM8K reasoning experiments (§4.2) will be released separately.
+| [`gsm8k/`](gsm8k) | §4.2, Qwen-based ELF-B on GSM8K | NFT and GuidanceNFT under SCCFG 2, built on CEDR |
 
 Each directory is self-contained: it has its own `setup_upstream.sh`, which fetches the
 third-party code it builds on at a pinned commit and applies our patch, and a `scripts/`
@@ -43,6 +42,7 @@ gives download commands and checksums):
 | SD3.5-Medium (`b940f67`) | `diffusion_nft/<commit>/models/stable-diffusion-3.5-medium/<revision>` |
 | Autoguidance toy models | `models/autoguidance-toy/*.pkl` (downloaded by `toy/setup_upstream.sh`) |
 | ELF-B (OpenWebText) | Hugging Face `embedded-language-flows/ELF-B-owt` |
+| ELF-B (GSM8K) | `gsm8k/packages/gsm8k-b-{pre,post}-nft` from Hugging Face `xc91/CEDR` (`gsm8k/scripts/prepare_data.sh`) |
 
 The paper's runs used two H200 GPUs per job (one for the toy).
 
@@ -66,15 +66,21 @@ scripts/train.sh baselines/diffusion_nft_sd35_v5/config/cfg_learned3_b24_g48_ste
 cd elf_owt && ./setup_upstream.sh
 scripts/smoke.sh guidancenft
 scripts/train.sh baselines/elf_nft/configs/owt_w3_conditional_only_shifted_center_100.json
+
+# Qwen-based ELF-B on GSM8K
+cd gsm8k && ./setup_upstream.sh && pip install -e 'third_party/CEDR[data,math]'
+scripts/prepare_data.sh
+scripts/smoke.sh guidancenft
+scripts/train.sh guidancenft
 ```
 
 ## Checkpoints
 
 The fine-tuned checkpoints reported in the paper are on the Hugging Face Hub at
 [jiayin-l23/GuidanceNFT](https://huggingface.co/jiayin-l23/GuidanceNFT): SiT-XL/2 and Model
-Guidance weights, SD3.5-Medium LoRA adapters and ELF-B checkpoints, each folder with the
-SHA-256 of its files. `sit_imagenet/evaluate_released.py` evaluates the ImageNet weights with
-the paper protocol.
+Guidance weights, SD3.5-Medium LoRA adapters, ELF-B checkpoints and the GSM8K ELF-B models,
+each folder with the SHA-256 of its files. `sit_imagenet/evaluate_released.py` evaluates the
+ImageNet weights with the paper protocol, and `gsm8k/scripts/evaluate.sh` the GSM8K models.
 
 ## License
 

@@ -1,0 +1,2221 @@
+diff --git a/configs/gsm8k_b_guidancenft.yaml b/configs/gsm8k_b_guidancenft.yaml
+new file mode 100644
+index 0000000..f383eb6
+--- /dev/null
++++ b/configs/gsm8k_b_guidancenft.yaml
+@@ -0,0 +1,147 @@
++# GSM8K-B GuidanceNFT: generated-only endpoints, SCCFG-2 rollouts, learned
++# rollout-flow center (100 pretraining updates, then one center update per
++# policy update), 16 of the 31 interior rollout times per endpoint.
++task: gsm8k
++teacher:
++  model_id: Qwen/Qwen3-4B-Instruct-2507
++  revision: cdbee75f17c01a7cc42f958dc650907174af0554
++  chunk_rows: 32
++representation:
++  layers:
++  - 16
++  - 24
++  - 32
++  dimensions:
++  - 256
++  - 256
++  - 512
++  eigenvalue_floor: 1.0e-05
++  projector_epochs: 10
++  projector_lr: 0.001
++  projector_ema: 0.999
++model:
++  text_encoder_dim: 1024
++  max_length: 1024
++  hidden_size: 768
++  depth: 12
++  num_heads: 12
++  bottleneck_dim: 512
++  decoder_dim: 1024
++  num_time_tokens: 4
++  num_self_cond_cfg_tokens: 4
++  num_model_mode_tokens: 4
++  vocab_size: 151936
++prompt:
++  vocab_size: 151936
++  max_length: 1024
++  external_embedding_dim: 2560
++  bottleneck_dim: 512
++  hidden_size: 768
++  depth: 6
++  num_heads: 12
++  output_dim: 1024
++training:
++  seed: 42
++  effective_batch: 512
++  micro_batch: 32
++  lr: 0.002
++  clip_norm: 1.0
++  ema_decays:
++  - 0.99
++  - 0.999
++  - 0.9999
++  bf16: true
++  compile: true
++  flow_mean: -1.5
++  flow_std: 0.8
++  noise_scale: 2.0
++  t_eps: 0.05
++  decoder_prob: 0.2
++  decoder_mean: 0.8
++  decoder_std: 0.8
++  decoder_noise_scale: 1.0
++  self_cond_prob: 0.5
++  sccfg_min: 0.5
++  sccfg_max: 5.0
++  ce_chunk_tokens: 512
++  save_every: 500
++  first_epoch_order: physical
++  later_epoch_order: global
++  prompt_mse_ratio: 0.0
++  mse_balance_decay: 0.99
++stages:
++  flow_epochs: 12
++  prompt_epochs: 60
++  joint_epochs: 6
++  joint_prompt_selector: '.999'
++  nft_updates: 500
++data:
++  max_tokens: 1024
++  max_prompt_tokens: 257
++  format: native_boxed_math
++  no_truncation: true
++inference:
++  steps: 32
++  clock_powers:
++  - 2.5
++  - 2.0
++  - 1.5
++  sccfg: 2.0
++  cfg: 1.0
++  grid_mean: -1.5
++  grid_std: 0.8
++  arithmetic: bf16
++  prompt_arithmetic: fp32
++  prompt_padding_multiple: 1
++  matmul_precision: high
++  noise_generator: cpu
++  elf_selector: '.9999'
++  prompt_selector: '.9999'
++nft:
++  lr: 0.0001
++  prompt_groups: 24
++  generated_per_group: 15
++  draws_per_endpoint: 16
++  rollout_steps: 32
++  rollout_arithmetic: bf16
++  matmul_precision: high
++  rollout_sccfg: 2.0
++  rollout_clock_powers:
++  - 1.0
++  - 1.0
++  - 1.0
++  beta: 1.0
++  reference_weight: 0.1
++  adv_clip_max: 5.0
++  adv_epsilon: 0.0001
++  old_transition_update: 400
++  old_post_transition_decay: 0.4
++  elf_init_selector: '.9999'
++  prompt_init_selector: '.999'
++  ema_decays:
++  - 0.9
++  - 0.99
++  - 0.999
++  - 0.9999
++  elf_eval_selector: '.99'
++  prompt_eval_selector: '.99'
++  gold_reward: 1.0
++  correct_reward: 0.75
++  incorrect_reward: 0.0
++  center: learned
++  center_lr: 0.0001
++  center_clip_norm: 1.0
++  center_ema_decay: 0.9
++  center_time_draws: 16
++  center_updates_per_update: 1
++  center_shared_self_condition: true
++  center_pretrain_updates: 100
++  center_pretrain_save_every: 25
++  train_sccfg: 2.0
++  gold_endpoints: false
++  time_source: rollout_grid
++  self_cond_prob: 1.0
++  velocity_reconstruction: false
++  save_every: 10
++  full_checkpoint_every: 0
++  eval_every: 50
+diff --git a/configs/gsm8k_b_nft.yaml b/configs/gsm8k_b_nft.yaml
+new file mode 100644
+index 0000000..99bde12
+--- /dev/null
++++ b/configs/gsm8k_b_nft.yaml
+@@ -0,0 +1,138 @@
++# GSM8K-B NFT: generated-only endpoints, SCCFG-2 rollouts, old-policy center,
++# all 31 interior rollout times per endpoint.
++task: gsm8k
++teacher:
++  model_id: Qwen/Qwen3-4B-Instruct-2507
++  revision: cdbee75f17c01a7cc42f958dc650907174af0554
++  chunk_rows: 32
++representation:
++  layers:
++  - 16
++  - 24
++  - 32
++  dimensions:
++  - 256
++  - 256
++  - 512
++  eigenvalue_floor: 1.0e-05
++  projector_epochs: 10
++  projector_lr: 0.001
++  projector_ema: 0.999
++model:
++  text_encoder_dim: 1024
++  max_length: 1024
++  hidden_size: 768
++  depth: 12
++  num_heads: 12
++  bottleneck_dim: 512
++  decoder_dim: 1024
++  num_time_tokens: 4
++  num_self_cond_cfg_tokens: 4
++  num_model_mode_tokens: 4
++  vocab_size: 151936
++prompt:
++  vocab_size: 151936
++  max_length: 1024
++  external_embedding_dim: 2560
++  bottleneck_dim: 512
++  hidden_size: 768
++  depth: 6
++  num_heads: 12
++  output_dim: 1024
++training:
++  seed: 42
++  effective_batch: 512
++  micro_batch: 32
++  lr: 0.002
++  clip_norm: 1.0
++  ema_decays:
++  - 0.99
++  - 0.999
++  - 0.9999
++  bf16: true
++  compile: true
++  flow_mean: -1.5
++  flow_std: 0.8
++  noise_scale: 2.0
++  t_eps: 0.05
++  decoder_prob: 0.2
++  decoder_mean: 0.8
++  decoder_std: 0.8
++  decoder_noise_scale: 1.0
++  self_cond_prob: 0.5
++  sccfg_min: 0.5
++  sccfg_max: 5.0
++  ce_chunk_tokens: 512
++  save_every: 500
++  first_epoch_order: physical
++  later_epoch_order: global
++  prompt_mse_ratio: 0.0
++  mse_balance_decay: 0.99
++stages:
++  flow_epochs: 12
++  prompt_epochs: 60
++  joint_epochs: 6
++  joint_prompt_selector: '.999'
++  nft_updates: 500
++data:
++  max_tokens: 1024
++  max_prompt_tokens: 257
++  format: native_boxed_math
++  no_truncation: true
++inference:
++  steps: 32
++  clock_powers:
++  - 2.5
++  - 2.0
++  - 1.5
++  sccfg: 2.0
++  cfg: 1.0
++  grid_mean: -1.5
++  grid_std: 0.8
++  arithmetic: bf16
++  prompt_arithmetic: fp32
++  prompt_padding_multiple: 1
++  matmul_precision: high
++  noise_generator: cpu
++  elf_selector: '.9999'
++  prompt_selector: '.9999'
++nft:
++  lr: 0.0001
++  prompt_groups: 24
++  generated_per_group: 15
++  draws_per_endpoint: 31
++  rollout_steps: 32
++  rollout_arithmetic: bf16
++  matmul_precision: high
++  rollout_sccfg: 2.0
++  rollout_clock_powers:
++  - 1.0
++  - 1.0
++  - 1.0
++  beta: 1.0
++  reference_weight: 0.1
++  adv_clip_max: 5.0
++  adv_epsilon: 0.0001
++  old_transition_update: 400
++  old_post_transition_decay: 0.4
++  elf_init_selector: '.9999'
++  prompt_init_selector: '.999'
++  ema_decays:
++  - 0.9
++  - 0.99
++  - 0.999
++  - 0.9999
++  elf_eval_selector: '.99'
++  prompt_eval_selector: '.99'
++  gold_reward: 1.0
++  correct_reward: 0.75
++  incorrect_reward: 0.0
++  center: old
++  train_sccfg: 2.0
++  gold_endpoints: false
++  time_source: rollout_grid
++  self_cond_prob: 1.0
++  velocity_reconstruction: false
++  save_every: 10
++  full_checkpoint_every: 0
++  eval_every: 50
+diff --git a/src/cedr/cli.py b/src/cedr/cli.py
+index 7279cff..bd4b4f7 100644
+--- a/src/cedr/cli.py
++++ b/src/cedr/cli.py
+@@ -111,6 +111,16 @@ def parser():
+     q.add_argument("--prompt-selector")
+     q.add_argument("--micro-batch", type=int)
+     q.add_argument("--max-updates", type=int)
++    q.add_argument(
++        "--total-updates",
++        type=int,
++        help="NFT: run to this update instead of stages.nft_updates (extends a resumed run)",
++    )
++    q.add_argument(
++        "--center-pretrain-only",
++        action="store_true",
++        help="NFT: stop after center pretraining, keeping center_pretrained.pt",
++    )
+     q.add_argument("--no-compile", action="store_true")
+     q.add_argument("--pad-id", type=int, default=151643)
+     q.add_argument("--reward-validation")
+diff --git a/src/cedr/common.py b/src/cedr/common.py
+index 61b0f32..00076ee 100644
+--- a/src/cedr/common.py
++++ b/src/cedr/common.py
+@@ -2,6 +2,7 @@
+ 
+ from __future__ import annotations
+ import contextlib
++from datetime import timedelta
+ import hashlib
+ import json
+ import os
+@@ -100,7 +101,11 @@ def distributed_setup():
+     if device.type == "cuda":
+         torch.cuda.set_device(device)
+     if world > 1 and not dist.is_initialized():
+-        dist.init_process_group("nccl" if device.type == "cuda" else "gloo")
++        # Rank 0 runs `nft.eval_inline` evaluations for far longer than the default
++        # 10-minute collective watchdog while the other ranks wait in all_reduce.
++        dist.init_process_group(
++            "nccl" if device.type == "cuda" else "gloo", timeout=timedelta(hours=12)
++        )
+     return rank, world, device
+ 
+ 
+diff --git a/src/cedr/models.py b/src/cedr/models.py
+index 5c87750..85c4e3a 100644
+--- a/src/cedr/models.py
++++ b/src/cedr/models.py
+@@ -6,6 +6,8 @@ from .nn.model import CEDR
+ from .nn.prompt import (
+     FrozenQwenEmbeddingPromptEncoder,
+     FrozenQwenEmbeddingPromptEncoderConfig,
++    LearnedEmbeddingPromptEncoder,
++    LearnedEmbeddingPromptEncoderConfig,
+ )
+ from .optim import muon_with_aux_adam
+ 
+@@ -13,7 +15,12 @@ from .optim import muon_with_aux_adam
+ def build_models(cfg, device, embedding=None, stage="joint"):
+     elf = None if stage == "prompt" else CEDR(**cfg["model"]).to(device)
+     prompt = None
+-    if stage != "flow":
++    if stage != "flow" and "embedding_dim" in cfg["prompt"]:
++        # Earlier GSM8K-B checkpoints carry their own prompt token embedding.
++        prompt = LearnedEmbeddingPromptEncoder(
++            LearnedEmbeddingPromptEncoderConfig(**cfg["prompt"])
++        ).to(device)
++    elif stage != "flow":
+         if embedding is None:
+             raise ValueError("a frozen teacher embedding artifact is required")
+         prompt = FrozenQwenEmbeddingPromptEncoder(
+diff --git a/src/cedr/nft.py b/src/cedr/nft.py
+index 7fe6d6b..7e4235c 100644
+--- a/src/cedr/nft.py
++++ b/src/cedr/nft.py
+@@ -1,7 +1,17 @@
+-"""Gold-anchored NFT with task rewards and synchronous training clocks."""
++"""Gold-anchored NFT with task rewards and synchronous training clocks.
++
++Optional ``nft`` settings, all off by default: generated-only endpoints
++(``gold_endpoints: false``), training times drawn from the rollout grid
++(``time_source: rollout_grid``), fixed guidance without velocity reconstruction
++(``train_sccfg``, ``velocity_reconstruction``), and a learned rollout-flow
++center (``center: learned``).
++"""
+ 
+ from __future__ import annotations
+ import copy
++import json
++import os
++import subprocess
+ from pathlib import Path
+ import time
+ import signal
+@@ -21,15 +31,30 @@ from .common import (
+     average_gradients,
+     append_json,
+     atomic_json,
++    atomic_save,
+ )
+ from .data import Rows, Cursor, collate
+ from .models import build_models, encode_prompt, make_optimizers, promote_time_embedders
++from .optim import muon_with_aux_adam
++from .packages import load_package, safe_path
+ from .teacher import load_embedding
+ from .state import EMA, save_training, restore_training, selected_state
+-from .objectives import normalized_rewards, nft_numerator, nft_velocity, velocity, draws
+-from .generation import sample, decode
++from .objectives import (
++    normalized_rewards,
++    nft_numerator,
++    shift_center_numerator,
++    flow_matching_numerator,
++    rollout_grid_times,
++    nft_velocity,
++    velocity,
++    draws,
++)
++from .generation import sample, decode, grid
+ from .rewards import reward
+ 
++PRETRAIN_SEED_OFFSET = 83_000_219
++TIME_BIN_EDGES = (0.1, 0.2, 0.35)
++
+ DECODER_ONLY = {
+     "mode_tokens",
+     "proj_kernel",
+@@ -45,6 +70,56 @@ def update_old(old, current, decay):
+         a.mul_(decay).add_(b, alpha=1 - decay)
+ 
+ 
++def nft_draws(shape, cfg, device, t=None):
++    """Training randomness with the optional fixed-time/fixed-guidance overrides."""
++    n = cfg["nft"]
++    r = draws(shape, cfg, device)
++    if t is not None:
++        r["t"] = t
++    if n.get("self_cond_prob") is not None:
++        r["use_sc"] = (
++            torch.rand(shape[0], device=device) < float(n["self_cond_prob"])
++        ).float()
++    if n.get("train_sccfg") is not None:
++        r["guidance"] = torch.full((shape[0],), float(n["train_sccfg"]), device=device)
++    return r
++
++
++class TimeBins:
++    """Token-normalized flow-matching residuals by training time, one rank."""
++
++    def __init__(self, device):
++        self.edges = torch.tensor(TIME_BIN_EDGES, device=device)
++        self.sums = {}
++        self.tokens = torch.zeros(len(TIME_BIN_EDGES) + 1, device=device)
++
++    @torch.no_grad()
++    def add(self, t, mask, data, **fields):
++        bins = torch.bucketize(t, self.edges)
++        self.tokens.index_add_(0, bins, mask.sum(1).float())
++        for name, value in fields.items():
++            error = ((value.float() - data.float()).square().mean(-1) * mask).sum(1)
++            self.sums.setdefault(name, torch.zeros_like(self.tokens)).index_add_(
++                0, bins, error
++            )
++
++    def report(self):
++        total = self.tokens.sum().clamp_min(1)
++        out = {}
++        for name, value in self.sums.items():
++            out[name] = float(value.sum() / total)
++            out[name + "_by_time"] = (value / self.tokens.clamp_min(1)).tolist()
++        return out
++
++
++@torch.no_grad()
++def parameter_distance(a, b):
++    return float(
++        sum((x - y).float().square().sum() for x, y in zip(a.parameters(), b.parameters()))
++        .sqrt()
++    )
++
++
+ def run(args, cfg):
+     from transformers import AutoTokenizer
+     from .train import feature_provider
+@@ -64,34 +139,103 @@ def run(args, cfg):
+         raise ValueError(
+             "OCI requires --reward-validation receipt from reference validation"
+         )
++    gold_on = bool(n.get("gold_endpoints", True))
++    learned_center = n.get("center", "old") == "learned"
++    # ``current``: the center is the detached current policy, so the policy
++    # itself keeps being fitted to the rollouts it is rewarded on.
++    current_center = n.get("center", "old") == "current"
++    if n.get("center", "old") not in {"old", "learned", "current"}:
++        raise ValueError("nft.center must be old, learned or current")
++    # ``rollout_source: init`` keeps rollouts on the frozen --init package.
++    fixed_rollout = n.get("rollout_source", "old") == "init"
++    if n.get("rollout_source", "old") not in {"old", "init"}:
++        raise ValueError("nft.rollout_source must be old or init")
++    # ``reference: old`` anchors to the slowly updated old policy instead of the init.
++    old_reference = n.get("reference", "init") == "old"
++    if n.get("reference", "init") not in {"init", "old"}:
++        raise ValueError("nft.reference must be init or old")
++    grid_times = n.get("time_source", "logit_normal") == "rollout_grid"
++    if n.get("time_source", "logit_normal") not in {"logit_normal", "rollout_grid"}:
++        raise ValueError("nft.time_source must be logit_normal or rollout_grid")
++    reconstruction = bool(n.get("velocity_reconstruction", True))
++    # Rollout arithmetic. The default (fp32, no TF32) is the released NFT recipe;
++    # bf16 plus matmul_precision high matches the benchmark evaluation settings.
++    rollout_arithmetic = n.get("rollout_arithmetic", "fp32")
++    if rollout_arithmetic not in {"fp32", "bf16"}:
++        raise ValueError("nft.rollout_arithmetic must be fp32 or bf16")
++    torch.set_float32_matmul_precision(n.get("matmul_precision", "highest"))
++    shared_sc = bool(n.get("center_shared_self_condition", True))
++    # The center may live on another guidance token than the policy
++    # (``center_sccfg``), e.g. token 1 fitted to the SCCFG-3 rollouts.
++    center_sccfg = n.get("center_sccfg")
++
++    def center_guidance(guidance):
++        if center_sccfg is None:
++            return guidance
++        return torch.full_like(guidance, float(center_sccfg))
++
++    package = None
++    if args.init and Path(args.init).is_dir():
++        # A selected-weight package: one model/prompt pair and its shared assets.
++        package, manifest = load_package(args.init)
++        args.embedding = args.embedding or str(
++            safe_path(args.init, manifest["embedding"])
++        )
++        args.tokenizer = args.tokenizer or str(
++            safe_path(args.init, manifest["tokenizer"])
++        )
++        if args.elf_selector or args.prompt_selector:
++            raise ValueError("a model package already holds its selected pair")
++    init_selectors = (
++        dict(elf="raw", prompt="raw")
++        if package is not None
++        else dict(
++            elf=args.elf_selector or n["elf_init_selector"],
++            prompt=args.prompt_selector or n["prompt_init_selector"],
++        )
++    )
++    init_identity = (
++        None
++        if not args.init
++        else sha256(Path(args.init) / "manifest.json")
++        if package is not None
++        else sha256(args.init)
++    )
+     data = Rows(args.data)
+     if cfg["task"] == "oci":
+-        import json
+ 
+         receipt = json.loads(Path(args.reward_validation).read_text())
+         if receipt["eligible_sha256"] != data.manifest["input_sha256"]:
+             raise ValueError("OCI data differs from reference-validated population")
+-    provider = feature_provider(args, cfg, data, device)
++    provider = feature_provider(args, cfg, data, device) if gold_on else None
+     with preserve_rng():
+         seed_all(c["seed"])
+         elf, prompt = build_models(cfg, device, load_embedding(args.embedding))
+-    if not args.resume:
+-        source = load_tensor_file(args.init)
++    if fixed_rollout and package is None:
++        raise ValueError("nft.rollout_source init requires a model package --init")
++    rollout_elf = rollout_prompt = None
++    if not args.resume or fixed_rollout:
++        source = package if package is not None else load_tensor_file(args.init)
+         elf.load_state_dict(
+             promote_time_embedders(
+-                selected_state(
+-                    source, "elf", args.elf_selector or n["elf_init_selector"]
+-                ),
++                selected_state(source, "elf", init_selectors["elf"]),
+                 cfg["model"]["feature_group_time_names"],
+             ),
+             strict=True,
+         )
+         prompt.load_state_dict(
+-            selected_state(
+-                source, "prompt", args.prompt_selector or n["prompt_init_selector"]
+-            ),
++            selected_state(source, "prompt", init_selectors["prompt"]),
+             strict=True,
+         )
++    if fixed_rollout:
++        rollout_elf = copy.deepcopy(elf).eval().requires_grad_(False)
++        rollout_prompt = copy.deepcopy(prompt).eval().requires_grad_(False)
++    if not args.resume and n.get("elf_init_bundle"):
++        # Trained weights from a slim bundle (e.g. a pretrained center); the
++        # prompt encoder stays the package one the bundle was fitted under.
++        elf.load_state_dict(
++            load_tensor_file(n["elf_init_bundle"])["models"]["elf"], strict=True
++        )
+     for name, p in elf.named_parameters():
+         if name in DECODER_ONLY:
+             p.requires_grad_(False)
+@@ -108,10 +252,32 @@ def run(args, cfg):
+         ref_prompt=ref_prompt,
+     )
+     optimizers = make_optimizers(elf, prompt, n["lr"])
++    all_optimizers = dict(optimizers)
++    center_raw = center_ema = None
++    if learned_center:
++        # The center starts at the source policy, so its first objective equals
++        # the old-center one; it is then fitted to old-policy rollouts.
++        center_raw = copy.deepcopy(elf)
++        center_ema = copy.deepcopy(elf).eval().requires_grad_(False)
++        models.update(center_raw=center_raw, center_ema=center_ema)
++        all_optimizers["center"] = [muon_with_aux_adam(center_raw, n["center_lr"])]
+     emas = {k: EMA(m, n["ema_decays"]) for k, m in dict(elf=elf, prompt=prompt).items()}
+     groups = n["prompt_groups"]
+     if groups % world:
+         raise ValueError("prompt_groups must be divisible by the torchrun world size")
++    # One rollout round can feed several policy updates: the groups are split
++    # into equal parts, the center takes its steps on every part first, then the
++    # policy takes one step per part with old and center frozen.
++    parts = int(n.get("policy_updates_per_round", 1))
++    if parts < 1 or (groups // world) % parts or cfg["stages"]["nft_updates"] % parts:
++        raise ValueError(
++            "policy_updates_per_round must divide the per-rank groups and nft_updates"
++        )
++    pretrain_groups = int(n.get("center_pretrain_prompt_groups", groups))
++    if pretrain_groups % world:
++        raise ValueError(
++            "center_pretrain_prompt_groups must be divisible by the torchrun world size"
++        )
+     unique = np.load(Path(args.data) / "prompts.npy", mmap_mode="r")
+     cursor = Cursor(
+         len(unique),
+@@ -126,15 +292,12 @@ def run(args, cfg):
+         stage="nft",
+         config=digest(cfg),
+         dataset=data.identity,
+-        features=provider.identity,
++        features=None if provider is None else provider.identity,
+         embedding=artifact_identity(args.embedding),
+         world_size=world,
+         train_micro=args.micro_batch or c["micro_batch"],
+-        init=sha256(args.init) if args.init else None,
+-        initialization_selectors=dict(
+-            elf=args.elf_selector or n["elf_init_selector"],
+-            prompt=args.prompt_selector or n["prompt_init_selector"],
+-        ),
++        init=init_identity,
++        initialization_selectors=init_selectors,
+         reward_validation=(
+             sha256(args.reward_validation) if args.reward_validation else None
+         ),
+@@ -145,6 +308,22 @@ def run(args, cfg):
+     update = 0
+     rounds = 0
+     gen = torch.Generator(device=device).manual_seed(c["seed"] + rank)
++    # Center pretraining draws its own prompts and rollout noise, leaving the
++    # policy-phase streams identical to a run without pretraining.
++    pretrain_total = int(n.get("center_pretrain_updates", 0)) if learned_center else 0
++    pretrain_done = 0
++    pretrain_cursor = Cursor(
++        len(unique),
++        pretrain_groups // world,
++        world,
++        rank,
++        c["seed"] + PRETRAIN_SEED_OFFSET,
++        first="global",
++        later="global",
++    )
++    pretrain_gen = torch.Generator(device=device).manual_seed(
++        c["seed"] + PRETRAIN_SEED_OFFSET + rank
++    )
+     if args.resume:
+         saved = load_tensor_file(args.resume)
+         contract["init"] = saved["contract"]["init"]
+@@ -156,42 +335,220 @@ def run(args, cfg):
+             contract=contract,
+             models=models,
+             emas=emas,
+-            optimizers=optimizers,
++            optimizers=all_optimizers,
+             cursor=cursor,
+         )
+         gen.set_state(saved["extra"]["rollout_rng"][rank].cpu())
+         rounds = saved["extra"]["rounds"]
++        if learned_center:
++            pretrain_done = saved["extra"]["center_pretrain_update"]
++            pretrain_cursor.load_state_dict(saved["extra"]["center_pretrain_cursor"])
++            pretrain_gen.set_state(
++                saved["extra"]["center_pretrain_rollout_rng"][rank].cpu()
++            )
+     elif (out / "latest.pt").exists():
+         raise FileExistsError("existing NFT checkpoint; pass --resume")
++    elif n.get("warm_start"):
++        # A new run under this recipe from another run's weights, EMAs, optimizer
++        # states and update count; prompt order and rollout noise start afresh.
++        saved = load_tensor_file(n["warm_start"])
++        for k, m in models.items():
++            m.load_state_dict(saved["models"][k], strict=True)
++        for k, e in emas.items():
++            e.load_state_dict(saved["emas"][k])
++        for k, oo in all_optimizers.items():
++            for o, state in zip(oo, saved["optimizers"][k], strict=True):
++                o.load_state_dict(state)
++        update = saved["update"]
++        del saved
+ 
+-    def save(name):
++    def gather_states(generator):
+         states = [None] * world
+         if world > 1:
+-            dist.all_gather_object(states, gen.get_state())
++            dist.all_gather_object(states, generator.get_state())
+         else:
+-            states[0] = gen.get_state()
++            states[0] = generator.get_state()
++        return states
++
++    def save(name):
++        extra = dict(
++            rounds=rounds,
++            rollout_rng=gather_states(gen),
++            initialization_selectors=contract["initialization_selectors"],
++        )
++        if learned_center:
++            extra.update(
++                center_pretrain_update=pretrain_done,
++                center_pretrain_cursor=pretrain_cursor.state_dict(),
++                center_pretrain_rollout_rng=gather_states(pretrain_gen),
++            )
+         save_training(
+             out / name,
+             cfg=cfg,
+             contract=contract,
+             models=models,
+             emas=emas,
+-            optimizers=optimizers,
++            optimizers=all_optimizers,
+             cursor=cursor,
+             update=update,
+-            extra=dict(
+-                rounds=rounds,
+-                rollout_rng=states,
+-                initialization_selectors=contract["initialization_selectors"],
++            extra=extra,
++        )
++
++    eval_every = int(n.get("eval_every", 0))
++    eval_grids = n.get("eval_grid", {})
++    eval_grids = eval_grids if isinstance(eval_grids, list) else [eval_grids]
++    full_every = int(n.get("full_checkpoint_every", 100))
++
++    def save_eval_snapshot(done):
++        """Slim bundle (EMA .99 policy and prompt) that `cedr generate` can load,
++        plus an optional evaluation job. Non-resumable by design; `latest.pt` resumes."""
++        if rank != 0:
++            return
++        name = f"eval_update_{done:04d}.pt"
++        selector = n["elf_eval_selector"]
++        ema_key = format(float(selector), ".12g")
++        slim = {}
++        for key, module in (("elf", elf), ("prompt", prompt)):
++            covered = emas[key].values[ema_key]
++            slim[key] = {
++                k: v for k, v in module.state_dict().items() if k not in covered
++            }
++        atomic_save(
++            dict(
++                format="cedr-training-v1",
++                config=cfg,
++                contract=contract,
++                update=done,
++                models=slim,
++                emas={
++                    k: {ema_key: emas[k].values[ema_key]} for k in ("elf", "prompt")
++                },
+             ),
++            out / name,
+         )
++        script = n.get("eval_sbatch")
++        if not script:
++            return
++        if n.get("eval_inline"):
++            run_inline_eval(done)
++            return
++        marker = out / f"eval_submitted_{done:04d}.json"
++        if marker.exists():
++            return
++        result_dir = out.parent.parent / "eval" / out.name / f"update_{done:04d}"
++        recipe = out / "recipe_used.yaml"
++        records = []
++        for grid in eval_grids:
++            grid_env = ",".join(f"{k}={v}" for k, v in grid.items())
++            command = [
++                "sbatch",
++                f"--export=NONE,{grid_env}" if grid_env else "--export=NONE",
++                f"--job-name=cedr-eval-{out.name}-{done}",
++                script,
++                str(out / name),
++                str(result_dir),
++                str(recipe),
++            ]
++            try:
++                import yaml
++
++                recipe.write_text(yaml.safe_dump(cfg, sort_keys=False))
++                done_proc = subprocess.run(
++                    command, capture_output=True, text=True, timeout=120, check=False
++                )
++                record = dict(command=command, returncode=done_proc.returncode,
++                              stdout=done_proc.stdout.strip(), stderr=done_proc.stderr.strip())
++            except Exception as error:  # evaluation must never stop training
++                record = dict(command=command, error=repr(error))
++            records.append(record)
++        marker.write_text(json.dumps(records[0] if len(records) == 1 else records, indent=2))
++
++    def run_inline_eval(done):
++        """``nft.eval_inline``: runs the evaluation script inside this job instead of
++        submitting it, one shard of each grid's SCCFG list per visible GPU. Training
++        waits; an interrupt stops the evaluation and the next start finishes it."""
++        marker = out / f"eval_done_{done:04d}.json"
++        if rank != 0 or marker.exists():
++            return
++        result_dir = out.parent.parent / "eval" / out.name / f"update_{done:04d}"
++        recipe = out / "recipe_used.yaml"
++        devices = os.environ.get("CUDA_VISIBLE_DEVICES", "").split(",")
++        if devices == [""]:
++            devices = [str(i) for i in range(world)]
++        launcher = ("RANK", "LOCAL_RANK", "WORLD_SIZE", "GROUP_RANK", "MASTER_ADDR",
++                    "MASTER_PORT", "ROLE_RANK", "ROLE_NAME", "ROLE_WORLD_SIZE",
++                    "LOCAL_WORLD_SIZE", "GROUP_WORLD_SIZE")
++        base = {
++            k: v for k, v in os.environ.items()
++            if k not in launcher and not k.startswith(("TORCHELASTIC_", "PET_"))
++        }
++        command = ["bash", n["eval_sbatch"], str(out / f"eval_update_{done:04d}.pt"),
++                   str(result_dir), str(recipe)]
++        records, complete = [], True
++        try:
++            import yaml
+ 
+-    if update == 0:
++            recipe.write_text(yaml.safe_dump(cfg, sort_keys=False))
++            with open(out / "eval_inline.log", "a") as log:
++                for grid in eval_grids:
++                    sccfgs = str(grid.get("SCCFGS", "3")).split()
++                    procs = []
++                    for index, device_id in enumerate(devices):
++                        shard = sccfgs[index::len(devices)]
++                        if not shard:
++                            continue
++                        env = dict(base, **{k: str(v) for k, v in grid.items()})
++                        env.update(SCCFGS=" ".join(shard), CUDA_VISIBLE_DEVICES=device_id)
++                        procs.append(subprocess.Popen(
++                            command, env=env, stdout=log, stderr=subprocess.STDOUT,
++                            start_new_session=True,
++                        ))
++                    while any(p.poll() is None for p in procs):
++                        if requested[0]:
++                            for p in procs:
++                                if p.poll() is None:
++                                    os.killpg(p.pid, signal.SIGTERM)
++                            complete = False
++                        time.sleep(1)
++                    codes = [p.returncode for p in procs]
++                    records.append(dict(grid=grid, returncodes=codes))
++                    complete = complete and not any(codes)
++                    if requested[0]:
++                        complete = False
++                        break
++        except Exception as error:  # evaluation must never stop training
++            records.append(dict(error=repr(error)))
++            complete = False
++        if complete:
++            marker.write_text(json.dumps(dict(command=command, grids=records), indent=2))
++
++    def save_center_snapshot(name, done):
++        """Slim bundle of the EMA center with the prompt encoder it is fitted
++        under, so `cedr generate` can sample the center as a policy."""
++        if rank != 0:
++            return
++        ema_key = format(float(n["elf_eval_selector"]), ".12g")
++        atomic_save(
++            dict(
++                format="cedr-training-v1",
++                config=cfg,
++                contract=contract,
++                update=update,
++                center_pretrain_update=done,
++                models=dict(
++                    elf=center_ema.state_dict(), prompt=old_prompt.state_dict()
++                ),
++                emas=dict(elf={ema_key: {}}, prompt={ema_key: {}}),
++            ),
++            out / name,
++        )
++
++    if update == 0 and pretrain_done == 0:
+         save("initial.pt")
+-    current_forward = (
+-        torch.compile(elf)
+-        if c["compile"] and device.type == "cuda" and not args.no_compile
+-        else elf
++    compiled = c["compile"] and device.type == "cuda" and not args.no_compile
++    current_forward = torch.compile(elf) if compiled else elf
++    center_forward = (
++        torch.compile(center_raw) if compiled and learned_center else center_raw
+     )
+     tokenizer = AutoTokenizer.from_pretrained(
+         args.tokenizer or cfg["teacher"]["model_id"],
+@@ -201,7 +558,9 @@ def run(args, cfg):
+     K = n["generated_per_group"]
+     width = cfg["model"]["text_encoder_dim"]
+     length = cfg["data"]["max_tokens"]
+-    total = cfg["stages"]["nft_updates"]
++    total = getattr(args, "total_updates", None) or cfg["stages"]["nft_updates"]
++    if total % parts:
++        raise ValueError("--total-updates must be a multiple of policy_updates_per_round")
+     limit = min(total, update + args.max_updates) if args.max_updates else total
+     requested = [False]
+ 
+@@ -220,13 +579,24 @@ def run(args, cfg):
+             ),
+             out / "run.json",
+         )
+-    while update < limit:
+-        step_start = time.monotonic()
+-        indices, _ = cursor.next()
+-        rows = [data[int(unique[i])] for i in indices]
+-        rounds += 1
++    E = K + int(gold_on)
++    time_grid = grid(
++        n["rollout_steps"],
++        cfg["inference"]["grid_mean"],
++        cfg["inference"]["grid_std"],
++        device,
++    )
++    micro = args.micro_batch or c["micro_batch"]
++    save_every = int(n.get("save_every", c["save_every"]))
++
++    sampler, sampler_prompt = (
++        (rollout_elf, rollout_prompt) if fixed_rollout else (old_elf, old_prompt)
++    )
++
++    def collect(rows, generator):
++        """Old-policy rollouts (plus the gold endpoint when enabled) for local rows."""
+         gold_batch = collate(rows, length, tokenizer.pad_token_id, device)
+-        gold = provider(gold_batch).detach().float()
++        gold = provider(gold_batch).detach().float() if gold_on else None
+         endpoints = []
+         endpoint_masks = []
+         endpoint_rows = []
+@@ -235,18 +605,21 @@ def run(args, cfg):
+             for i, row in enumerate(rows):
+                 repeated = [row] * K
+                 batch = collate(repeated, length, tokenizer.pad_token_id, device)
+-                condition = encode_prompt(old_prompt, batch, True)
++                condition = encode_prompt(sampler_prompt, batch, True)
+                 z, _ = sample(
+-                    old_elf,
++                    sampler,
+                     condition,
+                     batch["prompt"],
+                     cfg,
+-                    generator=gen,
++                    generator=generator,
+                     steps=n["rollout_steps"],
+                     powers=n["rollout_clock_powers"],
+                     sccfg=n["rollout_sccfg"],
++                    bf16=rollout_arithmetic == "bf16",
++                )
++                tokens = decode(
++                    sampler, z, n["rollout_sccfg"], bf16=rollout_arithmetic == "bf16"
+                 )
+-                tokens = decode(old_elf, z, n["rollout_sccfg"])
+                 correct = []
+                 masks = []
+                 for ids in tokens.cpu().tolist():
+@@ -262,11 +635,158 @@ def run(args, cfg):
+                     mask[row["prompt_length"] : row["prompt_length"] + end] = True
+                     masks.append(mask)
+                 local_correct.append(correct)
+-                endpoints.append(torch.cat([gold[i : i + 1], z], 0))
+-                endpoint_masks.append(
+-                    torch.cat([gold_batch["answer"][i : i + 1], torch.stack(masks)], 0)
+-                )
+-                endpoint_rows.extend([row] * (K + 1))
++                masks = torch.stack(masks)
++                if gold_on:
++                    z = torch.cat([gold[i : i + 1], z], 0)
++                    masks = torch.cat([gold_batch["answer"][i : i + 1], masks], 0)
++                endpoints.append(z)
++                endpoint_masks.append(masks)
++                endpoint_rows.extend([row] * E)
++        return (
++            torch.cat(endpoints, 0),
++            torch.cat(endpoint_masks, 0),
++            endpoint_rows,
++            local_correct,
++        )
++
++    def record_times(endpoints, draws_per_endpoint):
++        if not grid_times:
++            return None
++        return rollout_grid_times(endpoints, draws_per_endpoint, time_grid)
++
++    def center_update(x, masks, endpoint_rows, span=None):
++        """One flow-matching step of the center on every generated endpoint of
++        the local groups in ``span`` (all of them by default)."""
++        first, last = (0, len(x) // E) if span is None else span
++        generated = torch.arange(first * E, last * E, device=device)
++        if gold_on:
++            generated = generated[generated % E != 0]
++        per_endpoint = int(n.get("center_time_draws", n["draws_per_endpoint"]))
++        ids = generated.repeat_interleave(per_endpoint)
++        times = record_times(len(generated), per_endpoint)
++        denom = (masks[generated].sum() * per_endpoint).double()
++        if world > 1:
++            dist.all_reduce(denom)
++        for o in all_optimizers["center"]:
++            o.zero_grad(set_to_none=True)
++        value = 0.0
++        for lo in range(0, len(ids), micro):
++            chosen = ids[lo : lo + micro]
++            batch = collate(
++                [endpoint_rows[int(i)] for i in chosen.cpu()],
++                length,
++                tokenizer.pad_token_id,
++                device,
++            )
++            target = x[chosen]
++            random = nft_draws(
++                target.shape, cfg, device, None if times is None else times[lo : lo + micro]
++            )
++            t = random["t"]
++            z = t[:, None, None] * target + (1 - t[:, None, None]) * random["noise"]
++            guidance = center_guidance(random["guidance"])
++            bootstrap = None
++            with torch.no_grad():
++                condition = encode_prompt(old_prompt, batch, True)
++                if shared_sc:
++                    bootstrap = nft_velocity(
++                        old_elf,
++                        z,
++                        condition,
++                        batch["prompt"],
++                        t,
++                        random["use_sc"],
++                        guidance,
++                        bf16=c["bf16"],
++                        reconstruction=reconstruction,
++                        return_bootstrap=True,
++                        bootstrap_only=True,
++                    )
++            predicted = nft_velocity(
++                center_forward,
++                z,
++                condition,
++                batch["prompt"],
++                t,
++                random["use_sc"],
++                guidance,
++                bf16=c["bf16"],
++                reconstruction=reconstruction,
++                bootstrap=bootstrap,
++            )
++            numerator = flow_matching_numerator(
++                predicted, velocity(target, z, t, c["t_eps"]), masks[chosen]
++            )
++            (numerator * (world / denom.float())).backward()
++            value += float((numerator / denom).detach())
++        average_gradients(center_raw)
++        norm = float(
++            torch.nn.utils.clip_grad_norm_(
++                center_raw.parameters(),
++                n.get("center_clip_norm", c["clip_norm"]),
++                error_if_nonfinite=True,
++            )
++        )
++        for o in all_optimizers["center"]:
++            o.step()
++        update_old(center_ema, center_raw, n["center_ema_decay"])
++        return dict(
++            center_rank0_loss_contribution=value,
++            center_answer_tokens=float(denom),
++            center_gradient_norm=norm,
++        )
++
++    def interrupted():
++        flag = torch.tensor(int(requested[0]), device=device)
++        if world > 1:
++            dist.all_reduce(flag, op=dist.ReduceOp.MAX)
++        return bool(flag.item())
++
++    while pretrain_done < pretrain_total:
++        step_start = time.monotonic()
++        indices, _ = pretrain_cursor.next()
++        rows = [data[int(unique[i])] for i in indices]
++        x, masks, endpoint_rows, local_correct = collect(rows, pretrain_gen)
++        stats = center_update(x, masks, endpoint_rows)
++        pretrain_done += 1
++        if device.type == "cuda":
++            torch.cuda.synchronize()
++        if rank == 0:
++            append_json(
++                dict(
++                    center_pretrain_update=pretrain_done,
++                    seconds=time.monotonic() - step_start,
++                    elapsed=time.monotonic() - start,
++                    rank0_generated_correct=float(np.mean(local_correct)),
++                    center_old_distance=parameter_distance(center_raw, old_elf),
++                    **stats,
++                ),
++                out / "center_pretrain_metrics.jsonl",
++            )
++        stop = interrupted()
++        if (
++            pretrain_done % int(n.get("center_pretrain_save_every", 25)) == 0
++            or pretrain_done == pretrain_total
++            or stop
++        ):
++            save("latest.pt")
++            save_center_snapshot(f"center_pretrain_{pretrain_done:04d}.pt", pretrain_done)
++        if stop:
++            return
++    if learned_center and getattr(args, "center_pretrain_only", False):
++        # Resumable under the same recipe: the policy phase starts from here.
++        save("center_pretrained.pt")
++        return
++    if n.get("eval_inline"):
++        # Evaluations an interrupt cut short.
++        for snapshot in sorted(out.glob("eval_update_*.pt")):
++            run_inline_eval(int(snapshot.stem[-4:]))
++    while update < limit:
++        step_start = time.monotonic()
++        indices, _ = cursor.next()
++        rows = [data[int(unique[i])] for i in indices]
++        rounds += 1
++        x, masks, endpoint_rows, local_correct = collect(rows, gen)
+         correct = torch.tensor(local_correct, dtype=torch.bool, device=device)
+         if world > 1:
+             gathered = [torch.empty_like(correct) for _ in range(world)]
+@@ -275,23 +795,25 @@ def run(args, cfg):
+         else:
+             all_correct = correct
+         keep, coefficients = normalized_rewards(
+-            all_correct, n["adv_epsilon"], n["adv_clip_max"]
++            all_correct, n["adv_epsilon"], n["adv_clip_max"], include_gold=gold_on
+         )
+         # Scatter normalized coefficients back without including discarded groups in std.
+-        full_rho = torch.zeros((groups, K + 1), device=device)
++        full_rho = torch.zeros((groups, E), device=device)
+         full_rho[keep] = coefficients
+         local_keep = keep[rank * len(rows) : (rank + 1) * len(rows)]
+         local_rho = full_rho[rank * len(rows) : (rank + 1) * len(rows)]
+         if not bool(keep.any()):
+             if rank == 0:
+                 append_json(
+-                    dict(round=rounds, update=update, discard_fraction=1.0),
++                    dict(
++                        round=rounds,
++                        update=update,
++                        discard_fraction=1.0,
++                        generated_correct=float(all_correct.float().mean()),
++                    ),
+                     out / "metrics.jsonl",
+                 )
+-            flag = torch.tensor(int(requested[0]), device=device)
+-            if world > 1:
+-                dist.all_reduce(flag, op=dist.ReduceOp.MAX)
+-            if flag.item():
++            if interrupted():
+                 save("latest.pt")
+                 return
+             if rounds > 1000 + update * 100:
+@@ -299,103 +821,203 @@ def run(args, cfg):
+                     "too many fully discarded rounds; inspect the training population"
+                 )
+             continue
+-        x = torch.cat(endpoints, 0)
+-        masks = torch.cat(endpoint_masks, 0)
++        round_start = update
++        span = len(rows) // parts
++        if device.type == "cuda":
++            torch.cuda.synchronize()
++        rollout_seconds = time.monotonic() - step_start
++        center_stats = {}
++        if learned_center:
++            repeats = int(
++                n.get("center_updates_per_update", 1)
++                if update < n["old_transition_update"]
++                else n.get(
++                    "center_updates_after_transition",
++                    n.get("center_updates_per_update", 1),
++                )
++            )
++            for part in range(parts):
++                for _ in range(repeats):
++                    center_stats = center_update(
++                        x, masks, endpoint_rows, (part * span, (part + 1) * span)
++                    )
++            if device.type == "cuda":
++                torch.cuda.synchronize()
++        center_seconds = time.monotonic() - step_start - rollout_seconds
+         rho = local_rho.flatten()
+-        active = local_keep.repeat_interleave(K + 1)
+-        endpoint_ids = (
+-            active.nonzero().flatten().repeat_interleave(n["draws_per_endpoint"])
+-        )
+-        denom = masks[active].sum() * n["draws_per_endpoint"]
+-        denom = denom.double()
+-        if world > 1:
+-            dist.all_reduce(denom)
+-        if denom <= 0:
+-            raise ValueError("retained NFT endpoints have zero scored tokens")
+-        for oo in optimizers.values():
+-            for o in oo:
+-                o.zero_grad(set_to_none=True)
+-        loss_value = 0.0
+-        micro = args.micro_batch or c["micro_batch"]
+-        # Every rank may retain a different number of records. No DDP collectives
+-        # occur inside this loop; gradients are summed once after all local work.
+-        for lo in range(0, len(endpoint_ids), micro):
+-            chosen = endpoint_ids[lo : lo + micro]
+-            rr = [endpoint_rows[int(i)] for i in chosen.cpu()]
+-            batch = collate(rr, length, tokenizer.pad_token_id, device)
+-            target = x[chosen]
+-            mask = masks[chosen]
+-            random = draws(target.shape, cfg, device)
+-            t = random["t"]
+-            z = t[:, None, None] * target + (1 - t[:, None, None]) * random["noise"]
+-            with torch.no_grad():
+-                old_condition = encode_prompt(old_prompt, batch, True)
+-                ref_condition = encode_prompt(ref_prompt, batch, True)
+-                old_v = nft_velocity(
+-                    old_elf,
+-                    z,
+-                    old_condition,
+-                    batch["prompt"],
+-                    t,
+-                    random["use_sc"],
+-                    random["guidance"],
+-                    bf16=c["bf16"],
++        records = []
++        mark = step_start
++        for part in range(parts):
++            in_part = torch.zeros_like(local_keep)
++            in_part[part * span : (part + 1) * span] = True
++            active = (local_keep & in_part).repeat_interleave(E)
++            endpoint_ids = (
++                active.nonzero().flatten().repeat_interleave(n["draws_per_endpoint"])
++            )
++            times = record_times(int(active.sum()), n["draws_per_endpoint"])
++            bins = TimeBins(device)
++            denom = masks[active].sum() * n["draws_per_endpoint"]
++            denom = denom.double()
++            if world > 1:
++                dist.all_reduce(denom)
++            if denom <= 0:
++                raise ValueError("retained NFT endpoints have zero scored tokens")
++            for oo in optimizers.values():
++                for o in oo:
++                    o.zero_grad(set_to_none=True)
++            loss_value = 0.0
++            # Every rank may retain a different number of records. No DDP collectives
++            # occur inside this loop; gradients are summed once after all local work.
++            for lo in range(0, len(endpoint_ids), micro):
++                chosen = endpoint_ids[lo : lo + micro]
++                rr = [endpoint_rows[int(i)] for i in chosen.cpu()]
++                batch = collate(rr, length, tokenizer.pad_token_id, device)
++                target = x[chosen]
++                mask = masks[chosen]
++                random = nft_draws(
++                    target.shape, cfg, device, None if times is None else times[lo : lo + micro]
+                 )
+-                ref_v = nft_velocity(
+-                    ref_elf,
++                t = random["t"]
++                z = t[:, None, None] * target + (1 - t[:, None, None]) * random["noise"]
++                center_v = None
++                with torch.no_grad():
++                    old_condition = encode_prompt(old_prompt, batch, True)
++                    old_v, old_bootstrap = nft_velocity(
++                        old_elf,
++                        z,
++                        old_condition,
++                        batch["prompt"],
++                        t,
++                        random["use_sc"],
++                        random["guidance"],
++                        bf16=c["bf16"],
++                        reconstruction=reconstruction,
++                        return_bootstrap=True,
++                    )
++                    ref_v = old_v
++                    if not old_reference:
++                        ref_v = nft_velocity(
++                            ref_elf,
++                            z,
++                            encode_prompt(ref_prompt, batch, True),
++                            batch["prompt"],
++                            t,
++                            random["use_sc"],
++                            random["guidance"],
++                            bf16=c["bf16"],
++                            reconstruction=reconstruction,
++                        )
++                    if learned_center:
++                        center_g = center_guidance(random["guidance"])
++                        center_bootstrap = old_bootstrap if shared_sc else None
++                        if shared_sc and center_sccfg is not None:
++                            center_bootstrap = nft_velocity(
++                                old_elf,
++                                z,
++                                old_condition,
++                                batch["prompt"],
++                                t,
++                                random["use_sc"],
++                                center_g,
++                                bf16=c["bf16"],
++                                reconstruction=reconstruction,
++                                return_bootstrap=True,
++                                bootstrap_only=True,
++                            )
++                        center_v = nft_velocity(
++                            center_ema,
++                            z,
++                            old_condition,
++                            batch["prompt"],
++                            t,
++                            random["use_sc"],
++                            center_g,
++                            bf16=c["bf16"],
++                            reconstruction=reconstruction,
++                            bootstrap=center_bootstrap,
++                        )
++                with autocast(device, c["bf16"]):
++                    condition = encode_prompt(prompt, batch)
++                current = nft_velocity(
++                    current_forward,
+                     z,
+-                    ref_condition,
++                    condition,
+                     batch["prompt"],
+                     t,
+                     random["use_sc"],
+                     random["guidance"],
+                     bf16=c["bf16"],
++                    reconstruction=reconstruction,
+                 )
+-            with autocast(device, c["bf16"]):
+-                condition = encode_prompt(prompt, batch)
+-            current = nft_velocity(
+-                current_forward,
+-                z,
+-                condition,
+-                batch["prompt"],
+-                t,
+-                random["use_sc"],
+-                random["guidance"],
+-                bf16=c["bf16"],
+-            )
+-            data_v = velocity(target, z, t, c["t_eps"])
+-            numerator = nft_numerator(
+-                current,
+-                old_v,
+-                ref_v,
+-                data_v,
+-                rho[chosen],
+-                mask,
+-                beta=n["beta"],
+-                clip=n["adv_clip_max"],
+-                reference_weight=n["reference_weight"],
+-            )
+-            # average_gradients divides by world, cancel it to obtain an UPDATE-
+-            # wide token normalization even when retained counts differ by rank.
+-            loss = numerator * (world / denom.float())
+-            loss.backward()
+-            loss_value += float((numerator / denom).detach())
+-        average_gradients(elf)
+-        average_gradients(prompt)
+-        norms = {
+-            k: float(
+-                torch.nn.utils.clip_grad_norm_(
+-                    m.parameters(), c["clip_norm"], error_if_nonfinite=True
++                data_v = velocity(target, z, t, c["t_eps"])
++                if learned_center or current_center:
++                    numerator = shift_center_numerator(
++                        current,
++                        old_v,
++                        center_v if learned_center else current,
++                        ref_v,
++                        data_v,
++                        rho[chosen],
++                        mask,
++                        beta=n["beta"],
++                        clip=n["adv_clip_max"],
++                        reference_weight=n["reference_weight"],
++                    )
++                    bins.add(
++                        t,
++                        mask,
++                        data_v,
++                        fm_old=old_v,
++                        fm_center=center_v if learned_center else current.detach(),
++                    )
++                else:
++                    numerator = nft_numerator(
++                        current,
++                        old_v,
++                        ref_v,
++                        data_v,
++                        rho[chosen],
++                        mask,
++                        beta=n["beta"],
++                        clip=n["adv_clip_max"],
++                        reference_weight=n["reference_weight"],
++                    )
++                    bins.add(t, mask, data_v, fm_old=old_v)
++                # average_gradients divides by world, cancel it to obtain an UPDATE-
++                # wide token normalization even when retained counts differ by rank.
++                loss = numerator * (world / denom.float())
++                loss.backward()
++                loss_value += float((numerator / denom).detach())
++            average_gradients(elf)
++            average_gradients(prompt)
++            norms = {
++                k: float(
++                    torch.nn.utils.clip_grad_norm_(
++                        m.parameters(), c["clip_norm"], error_if_nonfinite=True
++                    )
++                )
++                for k, m in dict(elf=elf, prompt=prompt).items()
++            }
++            for oo in optimizers.values():
++                for o in oo:
++                    o.step()
++            for k, m in dict(elf=elf, prompt=prompt).items():
++                emas[k].update(m)
++            update += 1
++            if device.type == "cuda":
++                torch.cuda.synchronize()
++            records.append(
++                dict(
++                    update=update,
++                    seconds=time.monotonic() - mark,
++                    rank0_loss_contribution=loss_value,
++                    global_answer_tokens=float(denom),
++                    gradient_norms=norms,
++                    **bins.report(),
+                 )
+             )
+-            for k, m in dict(elf=elf, prompt=prompt).items()
+-        }
+-        for oo in optimizers.values():
+-            for o in oo:
+-                o.step()
+-        for k, m in dict(elf=elf, prompt=prompt).items():
+-            emas[k].update(m)
+-        update += 1
++            mark = time.monotonic()
++        # Old stays frozen across the round's policy updates.
+         decay = (
+             min(0.001 * update, 0.5)
+             if update < n["old_transition_update"]
+@@ -406,29 +1028,43 @@ def run(args, cfg):
+         if device.type == "cuda":
+             torch.cuda.synchronize()
+         if rank == 0:
+-            append_json(
+-                dict(
+-                    update=update,
+-                    round=rounds,
+-                    seconds=time.monotonic() - step_start,
+-                    elapsed=time.monotonic() - start,
+-                    rank0_loss_contribution=loss_value,
+-                    global_answer_tokens=float(denom),
+-                    discard_fraction=float((~keep).float().mean()),
+-                    generated_correct=float(all_correct.float().mean()),
+-                    old_policy_decay=decay,
+-                    gradient_norms=norms,
++            shared = dict(
++                round=rounds,
++                elapsed=time.monotonic() - start,
++                rollout_seconds=rollout_seconds,
++                center_seconds=center_seconds,
++                discard_fraction=float((~keep).float().mean()),
++                generated_correct=float(all_correct.float().mean()),
++                group_correct_counts=all_correct.sum(1).tolist(),
++                old_policy_decay=decay,
++                **center_stats,
++                **(
++                    dict(center_old_distance=parameter_distance(center_raw, old_elf))
++                    if learned_center
++                    else {}
+                 ),
+-                out / "metrics.jsonl",
+             )
+-        flag = torch.tensor(int(requested[0]), device=device)
+-        if world > 1:
+-            dist.all_reduce(flag, op=dist.ReduceOp.MAX)
+-        if update % c["save_every"] == 0 or update == limit or flag.item():
++            for record in records:
++                append_json(dict(**record, **shared), out / "metrics.jsonl")
++
++        def due(every):
++            return bool(every) and update // every > round_start // every
++
++        stop = interrupted()
++        if due(save_every) or update >= limit or stop:
+             save("latest.pt")
+-        if update % 100 == 0:
++        if due(full_every):
+             save(f"update_{update:04d}.pt")
+-        if flag.item():
++        if due(eval_every):
++            if n.get("eval_inline") and device.type == "cuda":
++                torch.cuda.empty_cache()
++            save_eval_snapshot(update)
++            if n.get("eval_inline"):
++                stop = stop or interrupted()
++            if learned_center:
++                # Kept next to every policy snapshot; `latest.pt` is overwritten.
++                save_center_snapshot(f"center_ema_update_{update:04d}.pt", pretrain_done)
++        if stop:
+             return
+     if update == total:
+         save("final.pt")
+diff --git a/src/cedr/nn/prompt.py b/src/cedr/nn/prompt.py
+index 00c4a20..6db12a0 100644
+--- a/src/cedr/nn/prompt.py
++++ b/src/cedr/nn/prompt.py
+@@ -155,15 +155,7 @@ class FrozenQwenEmbeddingPromptEncoder(nn.Module):
+                 raise ValueError("prompt token id is outside the configured vocabulary")
+             if not bool(valid.any(dim=1).all()):
+                 raise ValueError("every prompt must contain at least one valid token")
+-        embedded = F.embedding(input_ids, self.external_token_embedding)
+-        # Outside autocast, cast gathered embeddings to the projection
+-        # weights' dtype. The full embedding table stays BF16 and frozen.
+-        if (
+-            embedded.dtype != self.input_projection.proj1.weight.dtype
+-            and not torch.is_autocast_enabled(embedded.device.type)
+-        ):
+-            embedded = embedded.to(self.input_projection.proj1.weight.dtype)
+-        hidden = self.input_projection(embedded)
++        hidden = self.embed(input_ids)
+         rope = lambda tensor: self.rope(tensor, num_empty_token=0)
+         for block in self.blocks:
+             hidden = block(
+@@ -175,7 +167,87 @@ class FrozenQwenEmbeddingPromptEncoder(nn.Module):
+         output = self.output_projection(self.output_norm(hidden))
+         return output * valid.unsqueeze(-1).to(output.dtype)
+ 
++    def embed(self, input_ids):
++        embedded = F.embedding(input_ids, self.external_token_embedding)
++        # Outside autocast, cast gathered embeddings to the projection
++        # weights' dtype. The full embedding table stays BF16 and frozen.
++        if (
++            embedded.dtype != self.input_projection.proj1.weight.dtype
++            and not torch.is_autocast_enabled(embedded.device.type)
++        ):
++            embedded = embedded.to(self.input_projection.proj1.weight.dtype)
++        return self.input_projection(embedded)
++
+     @property
+     def parameter_count(self) -> int:
+         """Count checkpointed/trainable tensors; excludes the Qwen table."""
+         return sum(parameter.numel() for parameter in self.parameters())
++
++
++@dataclass(frozen=True)
++class LearnedEmbeddingPromptEncoderConfig:
++    """Prompt encoder architecture with its own trainable token embedding.
++
++    Earlier ELF-B GSM8K checkpoints use this frontend: a learned
++    ``vocab_size x embedding_dim`` table followed by one biased linear map to
++    ``hidden_size``. The Transformer body matches the frozen-Qwen encoder.
++    """
++
++    vocab_size: int = 151_936
++    max_length: int = 1024
++    embedding_dim: int = 256
++    hidden_size: int = 768
++    depth: int = 6
++    num_heads: int = 12
++    mlp_ratio: float = 4.0
++    output_dim: int = 1_024
++    attn_dropout: float = 0.0
++    proj_dropout: float = 0.0
++
++
++class LearnedEmbeddingPromptEncoder(FrozenQwenEmbeddingPromptEncoder):
++    """Prompt encoder whose token embedding is a checkpointed parameter."""
++
++    def __init__(self, config: LearnedEmbeddingPromptEncoderConfig):
++        nn.Module.__init__(self)
++        self.config = cfg = config
++        if cfg.hidden_size % cfg.num_heads:
++            raise ValueError("hidden_size must be divisible by num_heads")
++        if cfg.max_length <= 0 or cfg.depth <= 0:
++            raise ValueError("max_length and depth must be positive")
++        self.token_embedding = nn.Embedding(cfg.vocab_size, cfg.embedding_dim)
++        self.input_projection = _make_linear(
++            cfg.embedding_dim,
++            cfg.hidden_size,
++            bias=True,
++            kernel_init=DEFAULT_KERNEL_INIT,
++            bias_init=DEFAULT_BIAS_INIT,
++        )
++        self.rope = TextRotaryEmbeddingFast(
++            dim=cfg.hidden_size // cfg.num_heads,
++            pt_seq_len=cfg.max_length,
++            num_empty_token=0,
++        )
++        self.blocks = nn.ModuleList(
++            [
++                ELFBlock(
++                    cfg.hidden_size,
++                    cfg.num_heads,
++                    mlp_ratio=cfg.mlp_ratio,
++                    attn_drop=cfg.attn_dropout,
++                    proj_drop=cfg.proj_dropout,
++                )
++                for _ in range(cfg.depth)
++            ]
++        )
++        self.output_norm = RMSNorm(cfg.hidden_size, eps=1e-6)
++        self.output_projection = _make_linear(
++            cfg.hidden_size,
++            cfg.output_dim,
++            bias=True,
++            kernel_init=DEFAULT_KERNEL_INIT,
++            bias_init=DEFAULT_BIAS_INIT,
++        )
++
++    def embed(self, input_ids):
++        return self.input_projection(self.token_embedding(input_ids))
+diff --git a/src/cedr/objectives.py b/src/cedr/objectives.py
+index 1938c27..f3541d4 100644
+--- a/src/cedr/objectives.py
++++ b/src/cedr/objectives.py
+@@ -108,7 +108,12 @@ def mixed_loss(model, clean, batch, cfg, randomness=None, forward=None):
+     )
+ 
+ 
+-def normalized_rewards(correct, epsilon=1e-4, clip=5.0):
++def normalized_rewards(correct, epsilon=1e-4, clip=5.0, include_gold=True):
++    """Group-centered reward coefficients on retained groups.
++
++    With ``include_gold=False`` the gold column is omitted and only groups with
++    mixed generated correctness are retained; statistics use generated tiers only.
++    """
+     if (
+         correct.ndim != 2
+         or correct.shape[1] < 1
+@@ -116,10 +121,15 @@ def normalized_rewards(correct, epsilon=1e-4, clip=5.0):
+     ):
+         raise ValueError("correctness must be binary [groups,K]")
+     keep = ~correct.bool().all(1)
+-    tiers = torch.cat(
+-        [torch.ones_like(correct[:, :1], dtype=torch.float32), correct.float() * 0.75],
+-        1,
+-    )[keep]
++    generated = correct.float() * 0.75
++    if include_gold:
++        tiers = torch.cat(
++            [torch.ones_like(correct[:, :1], dtype=torch.float32), generated], 1
++        )
++    else:
++        keep = keep & correct.bool().any(1)
++        tiers = generated
++    tiers = tiers[keep]
+     if tiers.numel() == 0:
+         return keep, tiers
+     centered = tiers - tiers.mean(1, keepdim=True)
+@@ -154,26 +164,106 @@ def nft_numerator(
+     return ((policy + reference_weight * ref) * mask).sum()
+ 
+ 
++def shift_center_numerator(
++    current,
++    old,
++    center,
++    reference,
++    data,
++    rho,
++    mask,
++    *,
++    beta=1.0,
++    clip=5.0,
++    reference_weight=0.1,
++):
++    """NFT numerator whose implicit fields are ``center +/- beta * (current - old)``.
++
++    Only ``current`` carries gradients. ``center == old`` reproduces
++    ``nft_numerator`` exactly.
++    """
++    center_residual = center.detach().float() - data.float()
++    delta = current.float() - old.detach().float()
++    pos = center_residual + beta * delta
++    neg = center_residual - beta * delta
++    policy = (clip / beta) * (
++        rho[:, None] * pos.square().mean(-1)
++        + (1 - rho[:, None]) * neg.square().mean(-1)
++    )
++    ref = (current.float() - reference.detach().float()).square().mean(-1)
++    return ((policy + reference_weight * ref) * mask).sum()
++
++
++def flow_matching_numerator(predicted, data, mask):
++    """Masked squared velocity error, summed over answer tokens."""
++    return ((predicted.float() - data.float()).square().mean(-1) * mask).sum()
++
++
++def rollout_grid_times(endpoints, draws_per_endpoint, grid, generator=None):
++    """Per-endpoint uniform without-replacement subsets of the interior rollout grid.
++
++    ``grid`` is the full solver grid including both boundaries; times 0 and 1
++    are excluded. Returns ``[endpoints * draws_per_endpoint]`` in endpoint-major order.
++    """
++    interior = grid[1:-1]
++    if not 0 < draws_per_endpoint <= len(interior):
++        raise ValueError("time draws exceed the interior rollout grid")
++    keys = torch.rand(
++        (endpoints, len(interior)),
++        device=interior.device if generator is None else generator.device,
++        generator=generator,
++    ).to(interior.device)
++    chosen = keys.argsort(dim=1, stable=True)[:, :draws_per_endpoint]
++    return interior[chosen].flatten()
++
++
+ def nft_velocity(
+-    model, z, clean_prompt, prompt_mask, t, use_sc, guidance, *, bf16=True, eps=0.05
++    model,
++    z,
++    clean_prompt,
++    prompt_mask,
++    t,
++    use_sc,
++    guidance,
++    *,
++    bf16=True,
++    eps=0.05,
++    reconstruction=True,
++    bootstrap=None,
++    return_bootstrap=False,
++    bootstrap_only=False,
+ ):
++    """Two-pass training velocity.
++
++    ``bootstrap`` supplies another role's detached zero-self-condition
++    prediction, replacing this model's own first pass. With
++    ``reconstruction=False`` the main-pass velocity is returned unchanged.
++    ``bootstrap_only`` returns the first-pass prediction without a main pass.
++    """
+     z = restore(z, clean_prompt, prompt_mask)
+-    with torch.no_grad(), autocast(z.device, bf16):
+-        zero = restore(torch.zeros_like(z), clean_prompt, prompt_mask)
+-        p0 = model(
+-            torch.cat([z, zero], -1),
+-            t,
+-            deterministic=True,
+-            self_cond_cfg_scale=guidance,
+-        )[0]
+-    sc = restore(p0.detach() * use_sc[:, None, None], clean_prompt, prompt_mask)
++    if bootstrap is None:
++        with torch.no_grad(), autocast(z.device, bf16):
++            zero = restore(torch.zeros_like(z), clean_prompt, prompt_mask)
++            p0 = model(
++                torch.cat([z, zero], -1),
++                t,
++                deterministic=True,
++                self_cond_cfg_scale=guidance,
++            )[0]
++    else:
++        p0 = bootstrap
++    p0 = p0.detach()
++    if bootstrap_only:
++        return p0
++    sc = restore(p0 * use_sc[:, None, None], clean_prompt, prompt_mask)
+     with autocast(z.device, bf16):
+         pred = model(
+             torch.cat([z, sc], -1), t, deterministic=True, self_cond_cfg_scale=guidance
+         )[0]
+-    v0 = velocity(p0, z, t, eps)
+     vm = velocity(pred, z, t, eps)
+-    correction = (use_sc * (1 - 1 / guidance))[:, None, None] * (
+-        vm.detach() - v0.detach()
+-    )
+-    return vm - correction
++    if reconstruction:
++        v0 = velocity(p0, z, t, eps)
++        vm = vm - (use_sc * (1 - 1 / guidance))[:, None, None] * (
++            vm.detach() - v0.detach()
++        )
++    return (vm, p0) if return_bootstrap else vm
+diff --git a/tests/test_learned_prompt.py b/tests/test_learned_prompt.py
+new file mode 100644
+index 0000000..c9004d4
+--- /dev/null
++++ b/tests/test_learned_prompt.py
+@@ -0,0 +1,39 @@
++import torch
++
++from cedr.models import build_models
++from cedr.nn.prompt import LearnedEmbeddingPromptEncoder
++
++
++def tiny_cfg():
++    return dict(
++        model=dict(
++            text_encoder_dim=16, max_length=16, hidden_size=32, depth=1, num_heads=4,
++            bottleneck_dim=8, decoder_dim=16, num_time_tokens=1,
++            num_self_cond_cfg_tokens=1, num_model_mode_tokens=1, vocab_size=50,
++        ),
++        prompt=dict(
++            vocab_size=50, max_length=16, embedding_dim=8, hidden_size=32, depth=1,
++            num_heads=4, output_dim=16,
++        ),
++    )
++
++
++def test_learned_prompt_encoder_needs_no_external_table():
++    _, prompt = build_models(tiny_cfg(), "cpu", embedding=None)
++    assert isinstance(prompt, LearnedEmbeddingPromptEncoder)
++    keys = set(prompt.state_dict())
++    assert {"token_embedding.weight", "input_projection.weight", "input_projection.bias"} <= keys
++    assert not any(k.startswith("input_projection.proj") for k in keys)
++
++
++def test_learned_prompt_encoder_masks_padding():
++    torch.manual_seed(0)
++    _, prompt = build_models(tiny_cfg(), "cpu", embedding=None)
++    ids = torch.tensor([[1, 2, 3, 0], [4, 5, 0, 0]])
++    mask = ids != 0
++    out = prompt(ids, mask)
++    assert out.shape == (2, 4, 16)
++    assert torch.all(out[~mask] == 0)
++    # Padding never changes the encodings of real tokens.
++    short = prompt(ids[1:, :2], mask[1:, :2])
++    torch.testing.assert_close(out[1, :2], short[0])
+diff --git a/tests/test_numerics.py b/tests/test_numerics.py
+index 761ea5b..00d0dab 100644
+--- a/tests/test_numerics.py
++++ b/tests/test_numerics.py
+@@ -230,3 +230,92 @@ def test_cursor_rank_coverage_tail_and_resume():
+     tail = [Cursor(7, 4, 2, r, 42, retain_tail=True) for r in range(2)]
+     assert tail[0].next() == ([0, 1, 2, 3], 7)
+     assert tail[1].next() == ([4, 5, 6], 7)
++
++
++def test_shift_center_matches_old_center_and_generated_only_rewards():
++    from cedr.objectives import shift_center_numerator, rollout_grid_times
++
++    torch.manual_seed(0)
++    cur = torch.randn(3, 4, 5, requires_grad=True)
++    old, ref, data = (torch.randn(3, 4, 5) for _ in range(3))
++    mask = torch.tensor([[1, 0, 0, 0], [1, 1, 1, 0], [1, 1, 0, 0]], dtype=torch.bool)
++    r = torch.tensor([0.3, 0.9, 0.5])
++    for beta in (1.0, 0.5):
++        standard = nft_numerator(cur, old, ref, data, r, mask, beta=beta)
++        shifted = shift_center_numerator(cur, old, old, ref, data, r, mask, beta=beta)
++        torch.testing.assert_close(shifted, standard)
++        torch.testing.assert_close(
++            torch.autograd.grad(shifted, cur)[0], torch.autograd.grad(standard, cur)[0]
++        )
++    # A different center moves the optimum by (data - center) on rewarded records.
++    center = torch.randn(3, 4, 5)
++    moved = shift_center_numerator(cur, old, center, ref, data, r, mask)
++    assert not torch.allclose(moved, standard)
++
++    correct = torch.tensor([[1, 1, 1], [1, 0, 0], [0, 0, 0], [0, 1, 1]])
++    keep, rho = normalized_rewards(correct, include_gold=False)
++    assert keep.tolist() == [False, True, False, True]
++    tiers = torch.tensor([[0.75, 0.0, 0.0], [0.0, 0.75, 0.75]])
++    expected = (
++        0.5
++        + (
++            (tiers - tiers.mean(1, keepdim=True))
++            / (tiers.flatten().std(unbiased=False) + 1e-4)
++        ).clamp(-5, 5)
++        / 10
++    )
++    torch.testing.assert_close(rho, expected)
++
++    points = grid(8)
++    times = rollout_grid_times(5, 7, points).reshape(5, 7)
++    for row in times:
++        assert sorted(row.tolist()) == points[1:-1].tolist()
++    subset = rollout_grid_times(5, 3, points).reshape(5, 3)
++    assert all(len(set(row.tolist())) == 3 for row in subset)
++    assert bool(((subset > 0) & (subset < 1)).all())
++    with pytest.raises(ValueError):
++        rollout_grid_times(1, 8, points)
++
++
++def test_nft_velocity_shared_bootstrap_and_no_reconstruction(cfg):
++    torch.manual_seed(0)
++    cfg["model"]["feature_group_time_conditioning"] = False
++    model = CEDR(**cfg["model"])
++    # Zero-initialized layers would make both passes identical.
++    with torch.no_grad():
++        for parameter in model.parameters():
++            parameter.add_(0.1 * torch.randn_like(parameter))
++    z = torch.randn(2, 16, 12)
++    clean = torch.randn(2, 16, 12)
++    prompt = torch.zeros(2, 16, dtype=torch.bool)
++    prompt[:, :3] = True
++    t = torch.tensor([0.2, 0.4])
++    use = torch.ones(2)
++    g = torch.full((2,), 2.0)
++    kwargs = dict(bf16=False)
++    composed, own = nft_velocity(
++        model, z, clean, prompt, t, use, g, return_bootstrap=True, **kwargs
++    )
++    main = nft_velocity(model, z, clean, prompt, t, use, g, reconstruction=False, **kwargs)
++    assert not torch.allclose(main, composed)
++    # Supplying the model's own first pass changes nothing.
++    torch.testing.assert_close(
++        nft_velocity(
++            model, z, clean, prompt, t, use, g, reconstruction=False, bootstrap=own, **kwargs
++        ),
++        main,
++        rtol=0,
++        atol=0,
++    )
++    torch.testing.assert_close(
++        nft_velocity(model, z, clean, prompt, t, use, g, bootstrap_only=True, **kwargs),
++        own,
++        rtol=0,
++        atol=0,
++    )
++    # Another role's first pass is what the main pass conditions on.
++    other = own + 1.0
++    shared = nft_velocity(
++        model, z, clean, prompt, t, use, g, reconstruction=False, bootstrap=other, **kwargs
++    )
++    assert not torch.allclose(shared, main)
+diff --git a/tests/test_pipeline.py b/tests/test_pipeline.py
+index cb0e500..f0778c5 100644
+--- a/tests/test_pipeline.py
++++ b/tests/test_pipeline.py
+@@ -412,3 +412,280 @@ def test_stratified_panel_weights(tmp_path):
+     assert (tmp_path / "panel.jsonl").read_bytes() == (
+         tmp_path / "panel2.jsonl"
+     ).read_bytes()
++
++
++def test_nft_inline_evaluation(tmp_path, cfg, rows, monkeypatch):
++    """`eval_inline` runs each grid inside the job, SCCFG values split over GPUs."""
++    from itertools import count
++    from test_packages import package
++    import cedr.nft as nft
++
++    data, rep, embedding = fixture_files(tmp_path, cfg, rows)
++    root = package(tmp_path, copy.deepcopy(cfg))
++
++    class Tokenizer:
++        pad_token_id = 0
++
++        def convert_tokens_to_ids(self, x):
++            return 6
++
++        def decode(self, *args, **kwargs):
++            return "text"
++
++    from transformers import AutoTokenizer
++
++    monkeypatch.setattr(AutoTokenizer, "from_pretrained", lambda *a, **k: Tokenizer())
++    script = tmp_path / "fake_eval.sh"
++    script.write_text(
++        'echo "$CUDA_VISIBLE_DEVICES|$SCCFGS|$STEPS|$CLOCKS|${RANK:-none}|$1|$2" >> "$CALLS"\n'
++    )
++    monkeypatch.setenv("CALLS", str(tmp_path / "calls.txt"))
++    monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "4,7")
++    monkeypatch.setenv("RANK", "0")
++    cfg["stages"]["nft_updates"] = 1
++    cfg["nft"].update(
++        gold_endpoints=False,
++        time_source="rollout_grid",
++        rollout_steps=4,
++        draws_per_endpoint=3,
++        self_cond_prob=1.0,
++        train_sccfg=2.0,
++        velocity_reconstruction=False,
++        center="old",
++        save_every=1,
++        eval_every=1,
++        eval_inline=True,
++        eval_sbatch=str(script),
++        eval_grid=[
++            dict(SCCFGS="1 3", STEPS="64", CLOCKS="async"),
++            dict(SCCFGS="1 3", STEPS="8", CLOCKS="sync"),
++        ],
++        full_checkpoint_every=0,
++    )
++    ticket = count()
++    monkeypatch.setattr(nft, "reward", lambda *a: next(ticket) % 2 == 0)
++    a = args_for(tmp_path, data, embedding, "nft")
++    a.embedding = None
++    a.init = str(root)
++    a.micro_batch = 2
++    a.output = str(tmp_path / "runs/run")
++    run(a, cfg)
++    calls = sorted((tmp_path / "calls.txt").read_text().splitlines())
++    snapshot = tmp_path / "runs/run/eval_update_0001.pt"
++    result = tmp_path / "eval/run/update_0001"
++    assert calls == sorted(
++        f"{device}|{sccfg}|{steps}|{clock}|none|{snapshot}|{result}"
++        for steps, clock in (("64", "async"), ("8", "sync"))
++        for device, sccfg in (("4", "1"), ("7", "3"))
++    )
++    assert (tmp_path / "runs/run/eval_done_0001.json").exists()
++    assert not (tmp_path / "runs/run/eval_submitted_0001.json").exists()
++
++
++@pytest.mark.parametrize(
++    "center,center_sccfg",
++    [("old", None), ("learned", None), ("learned", 1.0), ("current", None)],
++)
++def test_generated_only_nft_from_package_and_resume(
++    tmp_path, cfg, rows, monkeypatch, center, center_sccfg
++):
++    """Generated-only, rollout-grid NFT from a model package; resume is exact."""
++    from itertools import count
++    from test_packages import package
++    import cedr.nft as nft
++
++    data, rep, embedding = fixture_files(tmp_path, cfg, rows)
++    root = package(tmp_path, copy.deepcopy(cfg))
++
++    class Tokenizer:
++        pad_token_id = 0
++
++        def convert_tokens_to_ids(self, x):
++            return 6
++
++        def decode(self, *args, **kwargs):
++            return "text"
++
++    from transformers import AutoTokenizer
++
++    monkeypatch.setattr(AutoTokenizer, "from_pretrained", lambda *a, **k: Tokenizer())
++    cfg["stages"]["nft_updates"] = 2
++    cfg["nft"].update(
++        gold_endpoints=False,
++        time_source="rollout_grid",
++        rollout_steps=4,
++        draws_per_endpoint=3,
++        self_cond_prob=1.0,
++        train_sccfg=2.0,
++        velocity_reconstruction=False,
++        center=center,
++        save_every=1,
++        eval_every=1,
++        eval_sbatch="fake.sbatch",
++        eval_grid=dict(SEEDS="42 123", SCCFGS="3"),
++        full_checkpoint_every=0,
++    )
++    submitted = []
++
++    class Done:
++        returncode, stdout, stderr = 0, "Submitted batch job 1", ""
++
++    monkeypatch.setattr(
++        nft.subprocess, "run", lambda command, **k: submitted.append(command) or Done()
++    )
++    if center_sccfg is not None:
++        cfg["nft"]["center_sccfg"] = center_sccfg
++    if center == "current":
++        # NFT on the policy as its own center, rollouts fixed on the package.
++        cfg["nft"].update(reference="old", rollout_source="init")
++    if center == "learned":
++        cfg["nft"].update(
++            center_lr=1e-3,
++            center_ema_decay=0.5,
++            center_time_draws=2,
++            center_pretrain_updates=2,
++            center_pretrain_save_every=1,
++        )
++
++    def launch(output, **changes):
++        # Every group has mixed correctness, so no round is discarded.
++        ticket = count()
++        monkeypatch.setattr(nft, "reward", lambda *a: next(ticket) % 2 == 0)
++        a = args_for(tmp_path, data, embedding, "nft")
++        # The package supplies its own embedding table.
++        a.embedding = None
++        a.init = str(root)
++        a.micro_batch = 2
++        a.output = str(tmp_path / output)
++        for key, value in changes.items():
++            setattr(a, key, value)
++        run(a, cfg)
++        return a
++
++    launch("run", max_updates=1)
++    first = torch.load(tmp_path / "run/latest.pt", weights_only=False)
++    assert first["update"] == 1 and first["contract"]["features"] is None
++    # Slim evaluation bundle: same weights as the full bundle, no optimizer state,
++    # one evaluation job per snapshot, no periodic full checkpoint.
++    from cedr.state import selected_state
++
++    slim = torch.load(tmp_path / "run/eval_update_0001.pt", weights_only=False)
++    selector = cfg["nft"]["elf_eval_selector"]
++    for component in ("elf", "prompt"):
++        want = selected_state(first, component, selector)
++        got = selected_state(slim, component, selector)
++        assert set(want) == set(got) and all(torch.equal(want[k], got[k]) for k in want)
++    assert "optimizers" not in slim and not (tmp_path / "run/update_0001.pt").exists()
++    assert len(submitted) == 1 and submitted[0][-3].endswith("eval_update_0001.pt")
++    assert submitted[0][1] == "--export=NONE,SEEDS=42 123,SCCFGS=3"
++    assert (tmp_path / "run/eval_submitted_0001.json").exists()
++    assert first["contract"]["initialization_selectors"] == dict(elf="raw", prompt="raw")
++    metrics = [
++        json.loads(line) for line in (tmp_path / "run/metrics.jsonl").read_text().splitlines()
++    ]
++    assert metrics[-1]["discard_fraction"] == 0 and "fm_old" in metrics[-1]
++    if center == "learned":
++        assert first["extra"]["center_pretrain_update"] == 2
++        assert "fm_center" in metrics[-1] and metrics[-1]["center_old_distance"] > 0
++        assert len((tmp_path / "run/center_pretrain_metrics.jsonl").read_text().splitlines()) == 2
++        # The center is kept beside every policy snapshot, loadable as a policy.
++        kept = torch.load(tmp_path / "run/center_ema_update_0001.pt", weights_only=False)
++        assert kept["update"] == 1 and all(
++            torch.equal(kept["models"]["elf"][k], v)
++            for k, v in first["models"]["center_ema"].items()
++        )
++        assert any(
++            not torch.equal(first["models"]["center_ema"][k], first["models"]["ref_elf"][k])
++            for k in first["models"]["ref_elf"]
++        )
++        for key in ("proj_kernel", "unembed_kernel", "mode_tokens"):
++            torch.testing.assert_close(
++                first["models"]["center_raw"][key],
++                first["models"]["ref_elf"][key],
++                rtol=0,
++                atol=0,
++            )
++    else:
++        assert "center_raw" not in first["models"]
++    launch("run", resume=str(tmp_path / "run/latest.pt"))
++    resumed = torch.load(tmp_path / "run/final.pt", weights_only=False)
++    assert resumed["update"] == 2
++    if center == "current":
++        # A new recipe (old-policy rollouts) continues from the finished run.
++        cfg["stages"]["nft_updates"] = 3
++        cfg["nft"].update(rollout_source="old", warm_start=str(tmp_path / "run/final.pt"))
++        launch("warm")
++        warm = torch.load(tmp_path / "warm/final.pt", weights_only=False)
++        assert warm["update"] == 3 and not (tmp_path / "warm/initial.pt").exists()
++        assert (tmp_path / "warm/eval_update_0003.pt").exists()
++
++
++def test_generated_only_nft_two_policy_updates_per_round(tmp_path, cfg, rows, monkeypatch):
++    """One rollout round split in halves: a center step and a policy step per half."""
++    from itertools import count
++    from test_packages import package
++    import cedr.nft as nft
++
++    data, rep, embedding = fixture_files(tmp_path, cfg, rows)
++    root = package(tmp_path, copy.deepcopy(cfg))
++
++    class Tokenizer:
++        pad_token_id = 0
++
++        def convert_tokens_to_ids(self, x):
++            return 6
++
++        def decode(self, *args, **kwargs):
++            return "text"
++
++    from transformers import AutoTokenizer
++
++    monkeypatch.setattr(AutoTokenizer, "from_pretrained", lambda *a, **k: Tokenizer())
++    cfg["stages"]["nft_updates"] = 4
++    cfg["nft"].update(
++        gold_endpoints=False,
++        time_source="rollout_grid",
++        rollout_steps=4,
++        draws_per_endpoint=3,
++        self_cond_prob=1.0,
++        train_sccfg=2.0,
++        velocity_reconstruction=False,
++        center="learned",
++        center_lr=1e-3,
++        center_ema_decay=0.5,
++        center_time_draws=3,
++        center_pretrain_updates=1,
++        center_pretrain_prompt_groups=1,
++        policy_updates_per_round=2,
++        save_every=3,
++        eval_every=0,
++        full_checkpoint_every=0,
++    )
++    steps = []
++    center_update_old = nft.update_old
++    monkeypatch.setattr(
++        nft, "update_old", lambda *a: steps.append(a[2]) or center_update_old(*a)
++    )
++    ticket = count()
++    monkeypatch.setattr(nft, "reward", lambda *a: next(ticket) % 2 == 0)
++    a = args_for(tmp_path, data, embedding, "nft")
++    a.embedding = None
++    a.init = str(root)
++    a.micro_batch = 2
++    a.output = str(tmp_path / "run")
++    run(a, cfg)
++    metrics = [
++        json.loads(line) for line in (tmp_path / "run/metrics.jsonl").read_text().splitlines()
++    ]
++    assert [m["update"] for m in metrics] == [1, 2, 3, 4]
++    assert [m["round"] for m in metrics] == [1, 1, 2, 2]
++    assert [m["old_policy_decay"] for m in metrics] == [0.002, 0.002, 0.004, 0.004]
++    # Each half holds one of the two groups; the center saw both halves.
++    tokens = [m["global_answer_tokens"] for m in metrics]
++    assert tokens[0] + tokens[1] == metrics[0]["center_answer_tokens"] * 2
++    assert all(m["rollout_seconds"] > 0 and m["center_seconds"] > 0 for m in metrics)
++    # Per round: two center EMA steps, then old (model and prompt) moves once.
++    policy = [d for d in steps if d != 0.5]
++    assert policy == [0.002, 0.002, 0.004, 0.004] and steps.count(0.5) == 1 + 4
++    final = torch.load(tmp_path / "run/final.pt", weights_only=False)
++    assert final["update"] == 4 and final["extra"]["rounds"] == 2
