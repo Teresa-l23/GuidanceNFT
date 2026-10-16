@@ -2,6 +2,8 @@
 
 Code for **GuidanceNFT: NFT-Based Reward Fine-Tuning of Guided Diffusion Models**.
 
+[Paper (arXiv:2610.15856)](https://arxiv.org/abs/2610.15856) · [Project page](https://teresa-l23.github.io/projects/guidancenft.html) · [Checkpoints](https://huggingface.co/jiayin-l23/GuidanceNFT)
+
 DiffusionNFT (NFT) fine-tunes a diffusion model by regressing its velocity toward a
 reward-weighted displacement around a reference velocity. When rollouts are drawn from a
 guided sampler (explicit CFG, or guidance built into the model), the reference used by
